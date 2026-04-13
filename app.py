@@ -138,87 +138,277 @@ SYSTEM_PROMPT = f"""أنت مساعد الموارد البشرية الذكي �
 # ── Styling ──────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
 
-html, body, [class*="css"] {
-    font-family: 'Cairo', sans-serif !important;
+/* ── Design tokens ── */
+:root {
+    --bg-deep:       #070B14;
+    --bg-mid:        #0D1525;
+    --bg-panel:      #111827;
+    --blue:          #0056D6;
+    --blue-glow:     rgba(0, 86, 214, 0.35);
+    --blue-bright:   #1E7FFF;
+    --cyan:          #38BDF8;
+    --glass:         rgba(255, 255, 255, 0.04);
+    --glass-hover:   rgba(255, 255, 255, 0.08);
+    --border:        rgba(255, 255, 255, 0.07);
+    --border-blue:   rgba(0, 86, 214, 0.4);
+    --text:          #E8EDF5;
+    --text-muted:    rgba(232, 237, 245, 0.45);
+}
+
+/* ── Global ── */
+html, body, [class*="css"], .stApp {
+    font-family: 'Tajawal', sans-serif !important;
     direction: rtl;
 }
 
-/* Header */
-.main-header {
-    background: linear-gradient(135deg, #0056D6 0%, #003DA6 100%);
-    color: white;
-    padding: 1.5rem 2rem;
-    border-radius: 16px;
-    margin-bottom: 1.5rem;
-    text-align: center;
+/* ── Dark background + dot lattice ── */
+.stApp {
+    background-color: var(--bg-deep) !important;
+    background-image:
+        radial-gradient(ellipse 80% 40% at 50% 0%, rgba(0,86,214,0.18) 0%, transparent 70%),
+        radial-gradient(circle, rgba(56,189,248,0.06) 1px, transparent 1px);
+    background-size: 100% 100%, 28px 28px;
+    background-attachment: fixed;
+}
+
+[data-testid="stAppViewContainer"] {
+    background: transparent !important;
+}
+
+[data-testid="block-container"] {
+    padding-top: 1.5rem !important;
+    max-width: 820px;
+}
+
+/* ── Sidebar ── */
+[data-testid="stSidebar"] {
+    background: var(--bg-panel) !important;
+    border-left: 1px solid var(--border) !important;
     direction: rtl;
 }
-.main-header h1 { color: white; font-size: 1.8rem; margin: 0; font-weight: 700; }
-.main-header p  { color: rgba(255,255,255,0.85); margin: 0.3rem 0 0; font-size: 0.95rem; }
+[data-testid="stSidebar"] > div { padding-top: 1.5rem; }
 
-/* Chat messages RTL */
+/* ── Sidebar buttons (suggestion chips) ── */
+[data-testid="stSidebar"] .stButton > button {
+    background: var(--glass) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    border-radius: 10px !important;
+    font-family: 'Tajawal', sans-serif !important;
+    font-size: 0.82rem !important;
+    text-align: right !important;
+    direction: rtl !important;
+    transition: all 0.2s ease !important;
+    padding: 0.45rem 0.8rem !important;
+    position: relative;
+    overflow: hidden;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: var(--glass-hover) !important;
+    border-color: var(--border-blue) !important;
+    color: var(--cyan) !important;
+    box-shadow: 0 0 12px var(--blue-glow) !important;
+    transform: translateX(-2px) !important;
+}
+
+/* Clear button */
+[data-testid="stSidebar"] .stButton:last-child > button {
+    background: rgba(239,68,68,0.08) !important;
+    border-color: rgba(239,68,68,0.25) !important;
+    color: rgba(239,68,68,0.7) !important;
+    margin-top: 0.5rem;
+}
+[data-testid="stSidebar"] .stButton:last-child > button:hover {
+    background: rgba(239,68,68,0.15) !important;
+    color: #ef4444 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* ── Sidebar labels / markdown ── */
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 {
+    color: var(--text) !important;
+    direction: rtl;
+    text-align: right;
+}
+[data-testid="stSidebar"] hr { border-color: var(--border) !important; }
+
+/* ── Chat messages ── */
 [data-testid="stChatMessage"] {
     direction: rtl;
     text-align: right;
+    background: var(--glass) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 16px !important;
+    padding: 1rem 1.1rem !important;
+    margin-bottom: 0.75rem !important;
+    backdrop-filter: blur(8px);
+    animation: fadeInUp 0.35s ease both;
+    color: var(--text) !important;
 }
+
+/* Assistant messages — slight blue accent on right border */
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) {
+    border-right: 2px solid var(--border-blue) !important;
+}
+
+/* User messages — blue tint */
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {
+    background: rgba(0, 86, 214, 0.08) !important;
+    border-color: var(--border-blue) !important;
+}
+
 [data-testid="stChatMessage"] p,
-[data-testid="stChatMessage"] li {
-    direction: rtl;
-    text-align: right;
+[data-testid="stChatMessage"] li,
+[data-testid="stChatMessage"] span {
+    direction: rtl !important;
+    text-align: right !important;
+    color: var(--text) !important;
+    font-family: 'Tajawal', sans-serif !important;
+    font-size: 0.97rem !important;
+    line-height: 1.75 !important;
+}
+[data-testid="stChatMessage"] strong { color: var(--cyan) !important; }
+[data-testid="stChatMessage"] ul,
+[data-testid="stChatMessage"] ol { padding-right: 1.2rem; padding-left: 0; }
+
+/* Avatar icons */
+[data-testid="chatAvatarIcon-assistant"],
+[data-testid="chatAvatarIcon-user"] {
+    background: var(--blue) !important;
+    border-radius: 10px !important;
 }
 
-/* Chat input RTL */
+/* ── Chat input ── */
+[data-testid="stChatInput"] {
+    background: var(--bg-panel) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 14px !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+[data-testid="stChatInput"]:focus-within {
+    border-color: var(--blue) !important;
+    box-shadow: 0 0 0 3px var(--blue-glow) !important;
+}
 [data-testid="stChatInput"] textarea {
+    direction: rtl !important;
+    text-align: right !important;
+    font-family: 'Tajawal', sans-serif !important;
+    font-size: 0.95rem !important;
+    color: var(--text) !important;
+    background: transparent !important;
+}
+[data-testid="stChatInput"] textarea::placeholder { color: var(--text-muted) !important; }
+
+/* ── Spinner ── */
+[data-testid="stSpinner"] p { color: var(--text-muted) !important; direction: rtl; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: rgba(0,86,214,0.35); border-radius: 99px; }
+
+/* ── Animations ── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { text-shadow: 0 0 20px rgba(56,189,248,0.4); }
+    50%       { text-shadow: 0 0 35px rgba(56,189,248,0.7), 0 0 60px rgba(0,86,214,0.3); }
+}
+
+/* ── Custom HTML components ── */
+.chat-header {
+    text-align: center;
+    padding: 2rem 0 1.5rem;
+    direction: rtl;
+}
+.chat-header .logo-ring {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, #0056D6, #38BDF8);
+    border-radius: 18px;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 0 8px rgba(0,86,214,0.12), 0 0 40px rgba(0,86,214,0.3);
+}
+.chat-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #38BDF8, #ffffff, #38BDF8);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: pulse-glow 3s ease-in-out infinite, shimmer 4s linear infinite;
+    margin: 0 0 0.3rem;
+}
+@keyframes shimmer {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+.chat-header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+    letter-spacing: 0.01em;
+}
+.chat-header .divider {
+    width: 60px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue), transparent);
+    margin: 1rem auto 0;
+    border-radius: 99px;
+}
+
+/* HR contact card */
+.hr-card {
+    background: linear-gradient(135deg, rgba(0,86,214,0.12), rgba(56,189,248,0.06));
+    border: 1px solid var(--border-blue);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
     direction: rtl;
     text-align: right;
-    font-family: 'Cairo', sans-serif !important;
+    margin-top: 0.5rem;
 }
+.hr-card .label { color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.2rem; }
+.hr-card .email { color: var(--cyan); font-size: 0.85rem; font-weight: 700; }
 
-/* Sidebar */
-[data-testid="stSidebar"] {
+/* Sidebar section title */
+.sidebar-title {
+    color: var(--text-muted) !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
     direction: rtl;
     text-align: right;
-}
-
-/* Suggested questions */
-.suggestion-btn {
-    background: #f0f4ff;
-    border: 1px solid #0056D6;
-    border-radius: 20px;
-    padding: 0.4rem 0.9rem;
-    color: #0056D6;
-    font-size: 0.85rem;
-    cursor: pointer;
-    margin: 0.2rem;
-    direction: rtl;
-}
-
-/* HR contact footer */
-.hr-contact {
-    background: #f8f9fa;
-    border-right: 4px solid #0056D6;
-    padding: 0.8rem 1rem;
-    border-radius: 8px;
-    direction: rtl;
-    font-size: 0.85rem;
-    color: #555;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ── Header ───────────────────────────────────────────────────────────────────
 st.markdown("""
-<div class="main-header">
-    <h1>💬 مساعد HR</h1>
-    <p>51Talk Egypt — اسأل عن أي شيء يتعلق بسياسات الشركة والموارد البشرية</p>
+<div class="chat-header">
+    <div class="logo-ring">💬</div>
+    <h1>مساعد HR</h1>
+    <p>51Talk Egypt &nbsp;·&nbsp; اسأل عن أي شيء في سياسات الشركة</p>
+    <div class="divider"></div>
 </div>
 """, unsafe_allow_html=True)
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### 📋 أسئلة مقترحة")
+    st.markdown('<p class="sidebar-title">أسئلة سريعة</p>', unsafe_allow_html=True)
     suggestions = [
         "كم يوم إجازة سنوية لديّ؟",
         "ما هو نظام الحضور والانصراف؟",
@@ -233,15 +423,14 @@ with st.sidebar:
         if st.button(s, use_container_width=True, key=s):
             st.session_state["pending_input"] = s
 
-    st.divider()
     st.markdown("""
-    <div class="hr-contact">
-        <strong>📧 تواصل مع HR</strong><br>
-        hr.egy@51talk.com
+    <div class="hr-card">
+        <div class="label">📧 تواصل مع فريق HR</div>
+        <div class="email">hr.egy@51talk.com</div>
     </div>
     """, unsafe_allow_html=True)
 
-    st.divider()
+    st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🗑️ مسح المحادثة", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
