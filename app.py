@@ -1,3 +1,4 @@
+import base64
 import streamlit as st
 from groq import Groq
 
@@ -393,6 +394,88 @@ html, body, [class*="css"], .stApp {
     direction: rtl;
     text-align: right;
 }
+
+/* ── Payslip upload zone ── */
+.upload-zone {
+    background: linear-gradient(135deg, rgba(56,189,248,0.05), rgba(0,86,214,0.08));
+    border: 1.5px dashed rgba(56,189,248,0.35);
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.75rem;
+    direction: rtl;
+    text-align: right;
+    transition: border-color 0.2s;
+}
+.upload-zone:hover { border-color: rgba(56,189,248,0.6); }
+.upload-zone .uz-title {
+    color: var(--cyan);
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+}
+.upload-zone .uz-hint {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+
+/* Attached badge */
+.attached-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    color: var(--cyan);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    direction: rtl;
+}
+
+/* Style the Streamlit file uploader to fit the dark theme */
+[data-testid="stFileUploader"] {
+    background: transparent !important;
+    direction: rtl;
+}
+[data-testid="stFileUploader"] section {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+[data-testid="stFileUploader"] label {
+    color: var(--text-muted) !important;
+    font-family: 'Tajawal', sans-serif !important;
+    font-size: 0.85rem !important;
+}
+[data-testid="stFileUploaderDropzone"] {
+    background: rgba(255,255,255,0.02) !important;
+    border: 1.5px dashed rgba(56,189,248,0.3) !important;
+    border-radius: 10px !important;
+}
+[data-testid="stFileUploaderDropzone"]:hover {
+    border-color: rgba(56,189,248,0.6) !important;
+    background: rgba(56,189,248,0.04) !important;
+}
+[data-testid="stFileUploaderDropzone"] span {
+    color: var(--text-muted) !important;
+    font-family: 'Tajawal', sans-serif !important;
+}
+[data-testid="stFileUploaderDropzone"] button {
+    background: var(--blue) !important;
+    color: white !important;
+    border-radius: 8px !important;
+    font-family: 'Tajawal', sans-serif !important;
+}
+
+/* Payslip thumbnail in chat */
+[data-testid="stChatMessage"] img {
+    border-radius: 10px;
+    max-width: 280px;
+    border: 1px solid var(--border-blue);
+    margin-bottom: 0.5rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -438,6 +521,8 @@ with st.sidebar:
 # ── Chat state ────────────────────────────────────────────────────────────────
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "attached_image" not in st.session_state:
+    st.session_state.attached_image = None  # stores (bytes, mime_type)
 
 # Welcome message on first load
 if not st.session_state.messages:
@@ -451,7 +536,7 @@ if not st.session_state.messages:
 - 💰 الرواتب والمزايا
 - 📋 قواعد السلوك المهني
 - 📝 إجراءات الاستقالة والتعيين
-- وأي شيء آخر في دليل الموظف!
+- 🧾 كشوف الرواتب — أرفق صورة وأنا أشرحها لك!
 
 كيف يمكنني مساعدتك اليوم؟
         """)
@@ -459,17 +544,55 @@ if not st.session_state.messages:
 # Display chat history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
+        if msg.get("image_b64"):
+            img_bytes = base64.b64decode(msg["image_b64"])
+            st.image(img_bytes, width=260)
         st.markdown(msg["content"])
 
-# ── Groq response ─────────────────────────────────────────────────────────────
-def get_groq_response(messages: list[dict]) -> str:
+# ── Groq API functions ────────────────────────────────────────────────────────
+def _client() -> Groq:
     api_key = st.secrets.get("GROQ_API_KEY", "")
     if not api_key:
-        return "⚠️ خطأ في الإعداد: مفتاح API غير موجود. يرجى التواصل مع المسؤول."
-    client = Groq(api_key=api_key)
-    response = client.chat.completions.create(
+        st.error("⚠️ مفتاح API غير موجود.")
+        st.stop()
+    return Groq(api_key=api_key)
+
+
+def get_text_response(messages: list[dict]) -> str:
+    """HR handbook Q&A — text only."""
+    history = [
+        {"role": m["role"], "content": m["content"]}
+        for m in messages
+    ]
+    response = _client().chat.completions.create(
         model="llama-3.3-70b-versatile",
-        messages=[{"role": "system", "content": SYSTEM_PROMPT}] + messages,
+        messages=[{"role": "system", "content": SYSTEM_PROMPT}] + history,
+        temperature=0.2,
+        max_tokens=1500,
+    )
+    return response.choices[0].message.content
+
+
+def get_vision_response(question: str, image_b64: str, mime: str) -> str:
+    """Payslip reading — vision model."""
+    system = (
+        "أنت مساعد HR متخصص في قراءة كشوف الرواتب. "
+        "اقرأ الصورة المرفقة بعناية وأجب على سؤال الموظف باللغة العربية "
+        "بشكل واضح ودقيق. إذا رأيت أرقاماً أو بنوداً، اشرحها بالتفصيل."
+    )
+    response = _client().chat.completions.create(
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
+        messages=[
+            {"role": "system", "content": system},
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image_url",
+                     "image_url": {"url": f"data:{mime};base64,{image_b64}"}},
+                    {"type": "text", "text": question or "اشرح لي محتوى كشف الراتب هذا."},
+                ],
+            },
+        ],
         temperature=0.2,
         max_tokens=1500,
     )
@@ -477,21 +600,62 @@ def get_groq_response(messages: list[dict]) -> str:
 
 
 def handle_input(user_input: str) -> None:
-    st.session_state.messages.append({"role": "user", "content": user_input})
+    image_data = st.session_state.attached_image
+    image_b64 = base64.b64encode(image_data[0]).decode() if image_data else None
+
+    # Store user message
+    msg_record = {"role": "user", "content": user_input}
+    if image_b64:
+        msg_record["image_b64"] = image_b64
+    st.session_state.messages.append(msg_record)
+
+    # Display user turn
     with st.chat_message("user"):
+        if image_data:
+            st.image(image_data[0], width=260)
         st.markdown(user_input)
+
+    # Get AI reply
     with st.chat_message("assistant"):
         with st.spinner("جاري التفكير..."):
-            reply = get_groq_response(st.session_state.messages)
+            if image_data:
+                reply = get_vision_response(user_input, image_b64, image_data[1])
+            else:
+                reply = get_text_response(st.session_state.messages)
         st.markdown(reply)
+
     st.session_state.messages.append({"role": "assistant", "content": reply})
+    st.session_state.attached_image = None  # clear after sending
 
 
-# Handle sidebar suggestion buttons
+# ── Payslip upload zone ───────────────────────────────────────────────────────
+st.markdown("""
+<div class="upload-zone">
+    <div class="uz-title">🧾 إرفاق كشف راتب</div>
+    <div class="uz-hint">ارفع صورة كشف راتبك واسأل عنه مباشرةً</div>
+</div>
+""", unsafe_allow_html=True)
+
+uploaded = st.file_uploader(
+    label="",
+    type=["png", "jpg", "jpeg", "webp"],
+    label_visibility="collapsed",
+    key="payslip_upload",
+)
+
+if uploaded:
+    img_bytes = uploaded.read()
+    mime = uploaded.type or "image/jpeg"
+    st.session_state.attached_image = (img_bytes, mime)
+    st.image(img_bytes, caption="✅ الصورة مرفقة — اكتب سؤالك وأرسل", width=260)
+elif st.session_state.attached_image:
+    st.markdown('<span class="attached-badge">📎 صورة مرفقة</span>', unsafe_allow_html=True)
+
+# ── Input handling ────────────────────────────────────────────────────────────
 if "pending_input" in st.session_state:
     pending = st.session_state.pop("pending_input")
     handle_input(pending)
 
-# Handle chat input box
-if prompt := st.chat_input("اكتب سؤالك هنا..."):
+placeholder = "اسأل عن كشف راتبك..." if st.session_state.attached_image else "اكتب سؤالك هنا..."
+if prompt := st.chat_input(placeholder):
     handle_input(prompt)
