@@ -118,6 +118,58 @@ Escalation Matrix:
 
 Confidentiality: The company makes reasonable efforts to protect reporter confidentiality.
 Non-Retaliation: Retaliation against anyone who reports a concern is strictly prohibited.
+
+11. ITALENT SYSTEM — HOW TO USE
+iTalent is the company's HR self-service platform for managing attendance, leave, business trips, and personal HR requests.
+
+ACCESS:
+  - Web browser: open iTalent from your browser (ask HR or IT for the link if you don't have it).
+  - Mobile app: download the iTalent app on your phone for on-the-go access.
+  Both channels give you the same features.
+
+CLOCKING IN & OUT:
+  - Clock-in and clock-out are done via the iTalent mobile app only.
+  - Open the app at the start of your shift → tap Clock In.
+  - At the end of your shift → tap Clock Out.
+  - Do this every working day. Missing a punch 3 times results in a half-day salary deduction; 6 times results in a warning letter.
+
+HOW TO REQUEST LEAVE:
+  Step 1: Open iTalent (web or mobile app).
+  Step 2: Go to Employee Self-Service → My Attendance → Leave Application.
+           (Or click "Leave Application" directly from the left sidebar on the home screen.)
+  Step 3: Click "Leave Project" and select the leave type:
+            - Annual Leave
+            - Sick Leave
+            - Unpaid Leave
+            - Maternity Leave
+            - Paternity Leave
+            - Bereavement Leave
+            - Miscarriage Leave
+  Step 4: Choose the start and end dates of your leave.
+  Step 5: Write a reason in the Reason field (recommended).
+  Step 6: Attach supporting documents if required (e.g., medical certificate for sick leave, birth certificate for paternity/maternity leave).
+  Step 7: Click Submit.
+  Step 8: Your request is sent automatically to your manager for approval.
+  Step 9: Track the status under My Approval → Applied tab.
+
+TRACKING YOUR REQUESTS (MY APPROVAL):
+  - Pending:   request submitted and awaiting manager decision.
+  - Processed: manager has approved or rejected the request.
+  - Applied:   full list of all requests you have submitted.
+
+BUSINESS TRIPS:
+  - For local business trips: Employee Self-Service → My Attendance → Business Trip (Local).
+  - For international business trips: Employee Self-Service → My Attendance → My Business Trips.
+  - Fill in the trip details and submit for approval.
+
+PERSONNEL APPLICATION:
+  - For any formal HR request (e.g., contract-related): go to Self-Service Application → Personnel Application.
+
+COMMON FUNCTIONS:
+  - The "Common Functions" section in Employee Self-Service gives quick access to frequently used actions.
+
+MY PROFILE:
+  - View and verify your personal HR information under Employee Self-Service → My Profile.
 """
 
 SYSTEM_PROMPT = f"""أنت مساعد الموارد البشرية الذكي لشركة 51Talk Egypt، اسمك "مساعد HR".
@@ -492,6 +544,7 @@ st.markdown("""
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown('<p class="sidebar-title">أسئلة سريعة</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sidebar-title">سياسات الشركة</p>', unsafe_allow_html=True)
     suggestions = [
         "كم يوم إجازة سنوية لديّ؟",
         "ما هو نظام الحضور والانصراف؟",
@@ -503,6 +556,18 @@ with st.sidebar:
         "كيف أتواصل مع HR؟",
     ]
     for s in suggestions:
+        if st.button(s, use_container_width=True, key=s):
+            st.session_state["pending_input"] = s
+
+    st.markdown('<p class="sidebar-title" style="margin-top:1rem">iTalent</p>', unsafe_allow_html=True)
+    italent_suggestions = [
+        "كيف أسجل الحضور والانصراف في iTalent؟",
+        "كيف أطلب إجازة في iTalent؟",
+        "كيف أتابع طلبات الإجازة؟",
+        "كيف أفتح iTalent؟",
+        "كيف أطلب مأمورية في iTalent؟",
+    ]
+    for s in italent_suggestions:
         if st.button(s, use_container_width=True, key=s):
             st.session_state["pending_input"] = s
 
@@ -536,6 +601,7 @@ if not st.session_state.messages:
 - 💰 الرواتب والمزايا
 - 📋 قواعد السلوك المهني
 - 📝 إجراءات الاستقالة والتعيين
+- 📱 نظام **iTalent** — الحضور والانصراف وطلبات الإجازة والمأموريات
 - 🧾 كشوف الرواتب — أرفق صورة وأنا أشرحها لك!
 
 كيف يمكنني مساعدتك اليوم؟
