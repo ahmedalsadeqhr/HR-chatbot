@@ -191,11 +191,11 @@ SALARY_KNOWLEDGE = """
 HOW YOUR NET SALARY IS CALCULATED — STEP BY STEP:
 
 STEP 1 — Social & Health Insurance (Employee Share)
-  Rate:           12% total (11% Social Insurance + 1% Health Insurance)
+  Rate:           11% (Social Insurance only)
   Applied to:     Your "insurable wage" (basic salary + fixed allowances)
   Monthly cap:    EGP 16,700 maximum insurable wage (2026 figure)
   Monthly floor:  EGP 2,700 minimum insurable wage (2026 figure)
-  Max deduction:  EGP 16,700 × 12% = EGP 2,004/month
+  Max deduction:  EGP 16,700 × 11% = EGP 1,837/month
   This deduction is tax-deductible (reduces your taxable income).
 
 STEP 2 — Martyrs Fund
@@ -224,17 +224,17 @@ STEP 7 — Net Monthly Salary
   Net = Gross − Monthly SI − Monthly Tax − Martyrs Fund
 
 QUICK EXAMPLES (2026 figures):
-  Gross EGP 5,000/month  → approx. net EGP 4,398/month
-  Gross EGP 10,000/month → approx. net EGP 8,223/month
-  Gross EGP 15,000/month → approx. net EGP 11,740/month
-  Gross EGP 20,000/month → approx. net EGP 15,574/month
-  Gross EGP 30,000/month → approx. net EGP 23,328/month
-  Gross EGP 50,000/month → approx. net EGP 38,493/month
+  Gross EGP 5,000/month  → approx. net EGP 4,448/month
+  Gross EGP 10,000/month → approx. net EGP 8,303/month
+  Gross EGP 15,000/month → approx. net EGP 11,860/month
+  Gross EGP 20,000/month → approx. net EGP 15,708/month
+  Gross EGP 30,000/month → approx. net EGP 23,457/month
+  Gross EGP 50,000/month → approx. net EGP 38,618/month
 
 KEY NOTES:
   - Tax is calculated on annual income then divided by 12 for monthly payslip.
   - The SI cap means all employees earning above EGP 16,700/month pay the
-    same fixed SI deduction of EGP 2,004/month.
+    same fixed SI deduction of EGP 1,837/month.
   - The personal exemption (EGP 20,000/year ≈ EGP 1,667/month) benefits
     lower-income employees most.
   - Salary increases can move you into a higher tax bracket only on the
@@ -256,7 +256,7 @@ _TAX_BRACKETS = [
     (1_200_000,    0.25),
     (float("inf"), 0.275),
 ]
-_SI_RATE       = 0.12    # 11% pension + 1% health
+_SI_RATE       = 0.11    # 11% social insurance (employee share)
 _SI_CAP        = 16_700
 _SI_FLOOR      = 2_700
 _MARTYRS_RATE  = 0.0005
