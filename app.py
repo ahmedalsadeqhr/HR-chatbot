@@ -184,18 +184,18 @@ MY PROFILE:
   - View and verify your personal HR information under Employee Self-Service → My Profile.
 """
 
-# ── Egyptian Salary Calculation Knowledge (2025) ──────────────────────────────
+# ── Egyptian Salary Calculation Knowledge (2026) ──────────────────────────────
 SALARY_KNOWLEDGE = """
-12. SALARY CALCULATION & TAX DEDUCTIONS (Egypt 2025)
+12. SALARY CALCULATION & TAX DEDUCTIONS (Egypt 2026)
 
 HOW YOUR NET SALARY IS CALCULATED — STEP BY STEP:
 
 STEP 1 — Social & Health Insurance (Employee Share)
   Rate:           12% total (11% Social Insurance + 1% Health Insurance)
   Applied to:     Your "insurable wage" (basic salary + fixed allowances)
-  Monthly cap:    EGP 14,500 maximum insurable wage (2025 figure)
-  Monthly floor:  EGP 2,300 minimum insurable wage (2025 figure)
-  Max deduction:  EGP 14,500 × 12% = EGP 1,740/month
+  Monthly cap:    EGP 16,700 maximum insurable wage (2026 figure)
+  Monthly floor:  EGP 2,700 minimum insurable wage (2026 figure)
+  Max deduction:  EGP 16,700 × 12% = EGP 2,004/month
   This deduction is tax-deductible (reduces your taxable income).
 
 STEP 2 — Martyrs Fund
@@ -223,18 +223,18 @@ STEP 6 — Monthly Tax
 STEP 7 — Net Monthly Salary
   Net = Gross − Monthly SI − Monthly Tax − Martyrs Fund
 
-QUICK EXAMPLES:
-  Gross EGP 5,000/month  → approx. net EGP 4,367/month
-  Gross EGP 10,000/month → approx. net EGP 8,513/month
-  Gross EGP 15,000/month → approx. net EGP 12,441/month
-  Gross EGP 20,000/month → approx. net EGP 16,300/month
-  Gross EGP 30,000/month → approx. net EGP 23,547/month
-  Gross EGP 50,000/month → approx. net EGP 37,262/month
+QUICK EXAMPLES (2026 figures):
+  Gross EGP 5,000/month  → approx. net EGP 4,398/month
+  Gross EGP 10,000/month → approx. net EGP 8,223/month
+  Gross EGP 15,000/month → approx. net EGP 11,740/month
+  Gross EGP 20,000/month → approx. net EGP 15,574/month
+  Gross EGP 30,000/month → approx. net EGP 23,328/month
+  Gross EGP 50,000/month → approx. net EGP 38,493/month
 
 KEY NOTES:
   - Tax is calculated on annual income then divided by 12 for monthly payslip.
-  - The SI cap means all employees earning above EGP 14,500/month pay the
-    same fixed SI deduction of EGP 1,740/month.
+  - The SI cap means all employees earning above EGP 16,700/month pay the
+    same fixed SI deduction of EGP 2,004/month.
   - The personal exemption (EGP 20,000/year ≈ EGP 1,667/month) benefits
     lower-income employees most.
   - Salary increases can move you into a higher tax bracket only on the
@@ -257,8 +257,8 @@ _TAX_BRACKETS = [
     (float("inf"), 0.275),
 ]
 _SI_RATE       = 0.12    # 11% pension + 1% health
-_SI_CAP        = 14_500
-_SI_FLOOR      = 2_300
+_SI_CAP        = 16_700
+_SI_FLOOR      = 2_700
 _MARTYRS_RATE  = 0.0005
 _ANNUAL_EXEMPT = 20_000
 
