@@ -1,12 +1,24 @@
 import base64
+import os
 import streamlit as st
 from groq import Groq
 
 st.set_page_config(
     page_title="مساعد HR - 51Talk Egypt",
-    page_icon="💬",
+    page_icon="🐣",
     layout="centered",
 )
+
+# Load Toki mascot as base64 for inline HTML embedding
+def _load_toki() -> str:
+    path = os.path.join(os.path.dirname(__file__), "toki.png")
+    try:
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except FileNotFoundError:
+        return ""
+
+TOKI_B64 = _load_toki()
 
 # ── Handbook text ────────────────────────────────────────────────────────────
 HANDBOOK = """
@@ -193,21 +205,21 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
 
-/* ── Design tokens ── */
+/* ── 51Talk Brand Design Tokens ── */
 :root {
-    --bg-deep:       #070B14;
-    --bg-mid:        #0D1525;
-    --bg-panel:      #111827;
-    --blue:          #0056D6;
-    --blue-glow:     rgba(0, 86, 214, 0.35);
-    --blue-bright:   #1E7FFF;
-    --cyan:          #38BDF8;
+    --navy:          #162040;
+    --navy-mid:      #1D2B50;
+    --navy-panel:    #1A2645;
+    --yellow:        #FFC800;
+    --yellow-dark:   #E6B400;
+    --yellow-glow:   rgba(255, 200, 0, 0.30);
+    --yellow-soft:   rgba(255, 200, 0, 0.12);
     --glass:         rgba(255, 255, 255, 0.04);
     --glass-hover:   rgba(255, 255, 255, 0.08);
-    --border:        rgba(255, 255, 255, 0.07);
-    --border-blue:   rgba(0, 86, 214, 0.4);
-    --text:          #E8EDF5;
-    --text-muted:    rgba(232, 237, 245, 0.45);
+    --border:        rgba(255, 255, 255, 0.08);
+    --border-yellow: rgba(255, 200, 0, 0.35);
+    --text:          #F0F4FF;
+    --text-muted:    rgba(240, 244, 255, 0.45);
 }
 
 /* ── Global ── */
@@ -216,13 +228,13 @@ html, body, [class*="css"], .stApp {
     direction: rtl;
 }
 
-/* ── Dark background + dot lattice ── */
+/* ── Navy background + star lattice ── */
 .stApp {
-    background-color: var(--bg-deep) !important;
+    background-color: var(--navy) !important;
     background-image:
-        radial-gradient(ellipse 80% 40% at 50% 0%, rgba(0,86,214,0.18) 0%, transparent 70%),
-        radial-gradient(circle, rgba(56,189,248,0.06) 1px, transparent 1px);
-    background-size: 100% 100%, 28px 28px;
+        radial-gradient(ellipse 80% 45% at 50% 0%, rgba(255,200,0,0.10) 0%, transparent 65%),
+        radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 100% 100%, 32px 32px;
     background-attachment: fixed;
 }
 
@@ -237,8 +249,8 @@ html, body, [class*="css"], .stApp {
 
 /* ── Sidebar ── */
 [data-testid="stSidebar"] {
-    background: var(--bg-panel) !important;
-    border-left: 1px solid var(--border) !important;
+    background: var(--navy-panel) !important;
+    border-left: 1px solid var(--border-yellow) !important;
     direction: rtl;
 }
 [data-testid="stSidebar"] > div { padding-top: 1.5rem; }
@@ -259,10 +271,10 @@ html, body, [class*="css"], .stApp {
     overflow: hidden;
 }
 [data-testid="stSidebar"] .stButton > button:hover {
-    background: var(--glass-hover) !important;
-    border-color: var(--border-blue) !important;
-    color: var(--cyan) !important;
-    box-shadow: 0 0 12px var(--blue-glow) !important;
+    background: var(--yellow-soft) !important;
+    border-color: var(--border-yellow) !important;
+    color: var(--yellow) !important;
+    box-shadow: 0 0 12px var(--yellow-glow) !important;
     transform: translateX(-2px) !important;
 }
 
@@ -305,15 +317,15 @@ html, body, [class*="css"], .stApp {
     color: var(--text) !important;
 }
 
-/* Assistant messages — slight blue accent on right border */
+/* Assistant messages — yellow right accent */
 [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) {
-    border-right: 2px solid var(--border-blue) !important;
+    border-right: 3px solid var(--yellow) !important;
 }
 
-/* User messages — blue tint */
+/* User messages — subtle yellow tint */
 [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {
-    background: rgba(0, 86, 214, 0.08) !important;
-    border-color: var(--border-blue) !important;
+    background: rgba(255, 200, 0, 0.06) !important;
+    border-color: var(--border-yellow) !important;
 }
 
 [data-testid="stChatMessage"] p,
@@ -326,27 +338,28 @@ html, body, [class*="css"], .stApp {
     font-size: 0.97rem !important;
     line-height: 1.75 !important;
 }
-[data-testid="stChatMessage"] strong { color: var(--cyan) !important; }
+[data-testid="stChatMessage"] strong { color: var(--yellow) !important; }
 [data-testid="stChatMessage"] ul,
 [data-testid="stChatMessage"] ol { padding-right: 1.2rem; padding-left: 0; }
 
 /* Avatar icons */
 [data-testid="chatAvatarIcon-assistant"],
 [data-testid="chatAvatarIcon-user"] {
-    background: var(--blue) !important;
+    background: var(--navy-mid) !important;
+    border: 2px solid var(--yellow) !important;
     border-radius: 10px !important;
 }
 
 /* ── Chat input ── */
 [data-testid="stChatInput"] {
-    background: var(--bg-panel) !important;
-    border: 1px solid var(--border) !important;
+    background: var(--navy-panel) !important;
+    border: 1px solid var(--border-yellow) !important;
     border-radius: 14px !important;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 [data-testid="stChatInput"]:focus-within {
-    border-color: var(--blue) !important;
-    box-shadow: 0 0 0 3px var(--blue-glow) !important;
+    border-color: var(--yellow) !important;
+    box-shadow: 0 0 0 3px var(--yellow-glow) !important;
 }
 [data-testid="stChatInput"] textarea {
     direction: rtl !important;
@@ -358,13 +371,23 @@ html, body, [class*="css"], .stApp {
 }
 [data-testid="stChatInput"] textarea::placeholder { color: var(--text-muted) !important; }
 
+/* Send button */
+[data-testid="stChatInput"] button {
+    background: var(--yellow) !important;
+    color: var(--navy) !important;
+    border-radius: 10px !important;
+}
+[data-testid="stChatInput"] button:hover {
+    background: var(--yellow-dark) !important;
+}
+
 /* ── Spinner ── */
 [data-testid="stSpinner"] p { color: var(--text-muted) !important; direction: rtl; }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: var(--bg-deep); }
-::-webkit-scrollbar-thumb { background: rgba(0,86,214,0.35); border-radius: 99px; }
+::-webkit-scrollbar-track { background: var(--navy); }
+::-webkit-scrollbar-thumb { background: rgba(255,200,0,0.35); border-radius: 99px; }
 
 /* ── Animations ── */
 @keyframes fadeInUp {
@@ -372,60 +395,97 @@ html, body, [class*="css"], .stApp {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes pulse-glow {
-    0%, 100% { text-shadow: 0 0 20px rgba(56,189,248,0.4); }
-    50%       { text-shadow: 0 0 35px rgba(56,189,248,0.7), 0 0 60px rgba(0,86,214,0.3); }
+@keyframes toki-float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-6px); }
 }
 
-/* ── Custom HTML components ── */
+@keyframes shimmer-gold {
+    0%   { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+/* ── Chat header ── */
 .chat-header {
     text-align: center;
     padding: 2rem 0 1.5rem;
     direction: rtl;
 }
-.chat-header .logo-ring {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 64px; height: 64px;
-    background: linear-gradient(135deg, #0056D6, #38BDF8);
-    border-radius: 18px;
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 0 0 8px rgba(0,86,214,0.12), 0 0 40px rgba(0,86,214,0.3);
+.chat-header .toki-wrap {
+    display: inline-block;
+    margin-bottom: 0.6rem;
+    animation: toki-float 3s ease-in-out infinite;
+    filter: drop-shadow(0 8px 24px rgba(255,200,0,0.45));
+}
+.chat-header .toki-wrap img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+}
+.chat-header .brand-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--yellow), #FFE066);
+    color: var(--navy);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    margin-bottom: 0.6rem;
 }
 .chat-header h1 {
     font-size: 2rem;
     font-weight: 800;
-    background: linear-gradient(90deg, #38BDF8, #ffffff, #38BDF8);
+    background: linear-gradient(90deg, var(--yellow), #FFF5B0, var(--yellow));
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: pulse-glow 3s ease-in-out infinite, shimmer 4s linear infinite;
+    animation: shimmer-gold 4s linear infinite;
     margin: 0 0 0.3rem;
-}
-@keyframes shimmer {
-    0% { background-position: 0% center; }
-    100% { background-position: 200% center; }
 }
 .chat-header p {
     color: var(--text-muted);
     font-size: 0.9rem;
     margin: 0;
-    letter-spacing: 0.01em;
 }
 .chat-header .divider {
     width: 60px; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--blue), transparent);
+    background: linear-gradient(90deg, transparent, var(--yellow), transparent);
     margin: 1rem auto 0;
     border-radius: 99px;
 }
 
+/* Sidebar brand strip */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.4rem 1rem;
+    direction: rtl;
+}
+.sidebar-brand img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(255,200,0,0.4));
+}
+.sidebar-brand .sb-text {
+    color: var(--yellow);
+    font-weight: 800;
+    font-size: 1rem;
+    line-height: 1.1;
+}
+.sidebar-brand .sb-sub {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+}
+
 /* HR contact card */
 .hr-card {
-    background: linear-gradient(135deg, rgba(0,86,214,0.12), rgba(56,189,248,0.06));
-    border: 1px solid var(--border-blue);
+    background: linear-gradient(135deg, rgba(255,200,0,0.10), rgba(255,200,0,0.05));
+    border: 1px solid var(--border-yellow);
     border-radius: 12px;
     padding: 0.9rem 1rem;
     direction: rtl;
@@ -433,24 +493,26 @@ html, body, [class*="css"], .stApp {
     margin-top: 0.5rem;
 }
 .hr-card .label { color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.2rem; }
-.hr-card .email { color: var(--cyan); font-size: 0.85rem; font-weight: 700; }
+.hr-card .email { color: var(--yellow); font-size: 0.85rem; font-weight: 700; }
 
 /* Sidebar section title */
 .sidebar-title {
-    color: var(--text-muted) !important;
-    font-size: 0.72rem !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.08em !important;
+    color: var(--yellow) !important;
+    font-size: 0.70rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.1em !important;
     text-transform: uppercase;
     margin-bottom: 0.5rem;
     direction: rtl;
     text-align: right;
+    border-bottom: 1px solid rgba(255,200,0,0.2);
+    padding-bottom: 0.25rem;
 }
 
 /* ── Payslip upload zone ── */
 .upload-zone {
-    background: linear-gradient(135deg, rgba(56,189,248,0.05), rgba(0,86,214,0.08));
-    border: 1.5px dashed rgba(56,189,248,0.35);
+    background: linear-gradient(135deg, rgba(255,200,0,0.06), rgba(255,200,0,0.03));
+    border: 1.5px dashed rgba(255,200,0,0.35);
     border-radius: 14px;
     padding: 1rem 1.2rem;
     margin-bottom: 0.75rem;
@@ -458,9 +520,9 @@ html, body, [class*="css"], .stApp {
     text-align: right;
     transition: border-color 0.2s;
 }
-.upload-zone:hover { border-color: rgba(56,189,248,0.6); }
+.upload-zone:hover { border-color: rgba(255,200,0,0.65); }
 .upload-zone .uz-title {
-    color: var(--cyan);
+    color: var(--yellow);
     font-weight: 700;
     font-size: 0.9rem;
     margin-bottom: 0.2rem;
@@ -475,18 +537,18 @@ html, body, [class*="css"], .stApp {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    background: rgba(56,189,248,0.1);
-    border: 1px solid rgba(56,189,248,0.3);
+    background: rgba(255,200,0,0.1);
+    border: 1px solid rgba(255,200,0,0.3);
     border-radius: 20px;
     padding: 0.25rem 0.75rem;
-    color: var(--cyan);
+    color: var(--yellow);
     font-size: 0.8rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
     direction: rtl;
 }
 
-/* Style the Streamlit file uploader to fit the dark theme */
+/* Style the Streamlit file uploader */
 [data-testid="stFileUploader"] {
     background: transparent !important;
     direction: rtl;
@@ -503,20 +565,21 @@ html, body, [class*="css"], .stApp {
 }
 [data-testid="stFileUploaderDropzone"] {
     background: rgba(255,255,255,0.02) !important;
-    border: 1.5px dashed rgba(56,189,248,0.3) !important;
+    border: 1.5px dashed rgba(255,200,0,0.3) !important;
     border-radius: 10px !important;
 }
 [data-testid="stFileUploaderDropzone"]:hover {
-    border-color: rgba(56,189,248,0.6) !important;
-    background: rgba(56,189,248,0.04) !important;
+    border-color: rgba(255,200,0,0.6) !important;
+    background: rgba(255,200,0,0.04) !important;
 }
 [data-testid="stFileUploaderDropzone"] span {
     color: var(--text-muted) !important;
     font-family: 'Tajawal', sans-serif !important;
 }
 [data-testid="stFileUploaderDropzone"] button {
-    background: var(--blue) !important;
-    color: white !important;
+    background: var(--yellow) !important;
+    color: var(--navy) !important;
+    font-weight: 700 !important;
     border-radius: 8px !important;
     font-family: 'Tajawal', sans-serif !important;
 }
@@ -525,25 +588,37 @@ html, body, [class*="css"], .stApp {
 [data-testid="stChatMessage"] img {
     border-radius: 10px;
     max-width: 280px;
-    border: 1px solid var(--border-blue);
+    border: 1px solid var(--border-yellow);
     margin-bottom: 0.5rem;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ── Header ───────────────────────────────────────────────────────────────────
-st.markdown("""
+_toki_src = f"data:image/png;base64,{TOKI_B64}" if TOKI_B64 else "https://placehold.co/90x90/FFC800/162040?text=HR"
+st.markdown(f"""
 <div class="chat-header">
-    <div class="logo-ring">💬</div>
+    <div class="toki-wrap">
+        <img src="{_toki_src}" alt="Toki">
+    </div>
+    <div><span class="brand-badge">51Talk Egypt</span></div>
     <h1>مساعد HR</h1>
-    <p>51Talk Egypt &nbsp;·&nbsp; اسأل عن أي شيء في سياسات الشركة</p>
+    <p>مرحباً! أنا توكي، مساعدك في الموارد البشرية 🌟</p>
     <div class="divider"></div>
 </div>
 """, unsafe_allow_html=True)
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown('<p class="sidebar-title">أسئلة سريعة</p>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="sidebar-brand">
+        <img src="{_toki_src}" alt="Toki">
+        <div>
+            <div class="sb-text">51Talk Egypt</div>
+            <div class="sb-sub">Human Resources Assistant</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown('<p class="sidebar-title">سياسات الشركة</p>', unsafe_allow_html=True)
     suggestions = [
         "كم يوم إجازة سنوية لديّ؟",
@@ -593,7 +668,7 @@ if "attached_image" not in st.session_state:
 if not st.session_state.messages:
     with st.chat_message("assistant"):
         st.markdown("""
-مرحباً! 👋 أنا مساعد HR الخاص بشركة **51Talk Egypt**.
+مرحباً! 👋 أنا **توكي**، مساعد HR الخاص بشركة **51Talk Egypt**.
 
 يمكنني مساعدتك في الإجابة على أسئلتك المتعلقة بـ:
 - 📅 سياسات الإجازات (السنوية، المرضية، الأمومة...)
