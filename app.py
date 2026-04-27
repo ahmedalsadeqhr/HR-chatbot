@@ -20,6 +20,140 @@ def _load_toki() -> str:
 
 TOKI_B64 = _load_toki()
 
+# ── UI translations ───────────────────────────────────────────────────────────
+UI = {
+    "ar": {
+        "dir":              "rtl",
+        "page_icon":        "🐣",
+        "header_title":     "مساعد HR",
+        "header_sub":       "مرحباً! أنا توكي، مساعدك في الموارد البشرية 🌟",
+        "brand_sub":        "مساعد الموارد البشرية",
+        "switch_lang":      "🇬🇧 English",
+        "section_policies": "سياسات الشركة",
+        "section_italent":  "iTalent",
+        "hr_label":         "📧 تواصل مع فريق HR",
+        "clear_chat":       "🗑️ مسح المحادثة",
+        "upload_title":     "🧾 إرفاق كشف راتب",
+        "upload_hint":      "ارفع صورة كشف راتبك واسأل عنه مباشرةً",
+        "image_caption":    "✅ الصورة مرفقة — اكتب سؤالك وأرسل",
+        "attached_badge":   "📎 صورة مرفقة",
+        "spinner":          "جاري التفكير...",
+        "placeholder":      "اكتب سؤالك هنا...",
+        "placeholder_img":  "اسأل عن كشف راتبك...",
+        "api_error":        "⚠️ مفتاح API غير موجود.",
+        "suggestions": [
+            "كم يوم إجازة سنوية لديّ؟",
+            "ما هو نظام الحضور والانصراف؟",
+            "ما هي عقوبة التأخير؟",
+            "ما هي إجراءات الاستقالة؟",
+            "ما هو موعد صرف الراتب؟",
+            "ما هي سياسة الإجازة المرضية؟",
+            "ما هو كود اللبس الرسمي؟",
+            "كيف أتواصل مع HR؟",
+        ],
+        "italent_suggestions": [
+            "كيف أسجل الحضور والانصراف في iTalent؟",
+            "كيف أطلب إجازة في iTalent؟",
+            "كيف أتابع طلبات الإجازة؟",
+            "كيف أفتح iTalent؟",
+            "كيف أطلب مأمورية في iTalent؟",
+        ],
+        "welcome": (
+            "مرحباً! 👋 أنا **توكي**، مساعد HR الخاص بشركة **51Talk Egypt**.\n\n"
+            "يمكنني مساعدتك في:\n"
+            "- 📅 سياسات الإجازات (السنوية، المرضية، الأمومة...)\n"
+            "- ⏰ جداول العمل والحضور والغيابات\n"
+            "- 💰 الرواتب والمزايا والتعويضات\n"
+            "- 🧮 **حساب صافي الراتب والضريبة** — اكتب مثلاً: *«احسب صافي راتب 15000 جنيه»*\n"
+            "- 📋 قواعد السلوك المهني ومعايير العمل\n"
+            "- 📝 إجراءات الاستقالة والتوظيف\n"
+            "- 📱 نظام **iTalent** — الحضور وطلبات الإجازة والمأموريات\n"
+            "- 🧾 كشوف الرواتب — أرفق صورة وأنا أشرحها لك!\n\n"
+            "كيف يمكنني مساعدتك اليوم؟"
+        ),
+        "commission_q": (
+            "حسناً! قبل ما أكمل الحساب، هل لديك **عمولة** هذا الشهر؟ 💰\n\n"
+            "- إذا **نعم** — أخبرني بمبلغها وسأضيفها للراتب قبل الحساب.\n"
+            "- إذا **لا** — اكتب «لا» أو «0» وسأحسب على الراتب الأساسي مباشرةً.\n\n"
+            "الراتب الأساسي المُسجَّل: **{gross:,.0f} ج.م**"
+        ),
+        "calc_with_comm":    "الراتب الأساسي {base:,.2f} ج.م + العمولة {comm:,.2f} ج.م = الإجمالي {total:,.2f} ج.م",
+        "calc_no_comm":      "الراتب الأساسي {base:,.2f} ج.م (بدون عمولة)",
+        "system_lang_instr": "أجب دائماً باللغة العربية.",
+        "vision_system": (
+            "أنت مساعد HR متخصص في قراءة كشوف الرواتب. "
+            "اقرأ الصورة المرفقة بعناية وأجب على سؤال الموظف باللغة العربية "
+            "بشكل واضح ودقيق. إذا رأيت أرقاماً أو بنوداً، اشرحها بالتفصيل."
+        ),
+        "vision_default_q": "اشرح لي محتوى كشف الراتب هذا.",
+    },
+    "en": {
+        "dir":              "ltr",
+        "page_icon":        "🐣",
+        "header_title":     "HR Assistant",
+        "header_sub":       "Hi! I'm Toki, your HR assistant 🌟",
+        "brand_sub":        "Human Resources Assistant",
+        "switch_lang":      "🇸🇦 العربية",
+        "section_policies": "Company Policies",
+        "section_italent":  "iTalent",
+        "hr_label":         "📧 Contact HR Team",
+        "clear_chat":       "🗑️ Clear Chat",
+        "upload_title":     "🧾 Attach Payslip",
+        "upload_hint":      "Upload a photo of your payslip and ask about it",
+        "image_caption":    "✅ Image attached — type your question and send",
+        "attached_badge":   "📎 Image attached",
+        "spinner":          "Thinking...",
+        "placeholder":      "Type your question here...",
+        "placeholder_img":  "Ask about your payslip...",
+        "api_error":        "⚠️ API key not found.",
+        "suggestions": [
+            "How many annual leave days do I have?",
+            "What is the attendance system?",
+            "What is the penalty for being late?",
+            "What is the resignation process?",
+            "When is salary paid?",
+            "What is the sick leave policy?",
+            "What is the dress code?",
+            "How do I contact HR?",
+        ],
+        "italent_suggestions": [
+            "How do I clock in/out on iTalent?",
+            "How do I request leave on iTalent?",
+            "How do I track my leave requests?",
+            "How do I access iTalent?",
+            "How do I request a business trip on iTalent?",
+        ],
+        "welcome": (
+            "Hello! 👋 I'm **Toki**, the HR assistant for **51Talk Egypt**.\n\n"
+            "I can help you with:\n"
+            "- 📅 Leave policies (annual, sick, maternity...)\n"
+            "- ⏰ Work schedules, attendance & absences\n"
+            "- 💰 Salaries, benefits & compensation\n"
+            "- 🧮 **Net salary & tax calculator** — just type e.g. *\"calculate net salary 15000 EGP\"*\n"
+            "- 📋 Professional conduct & workplace standards\n"
+            "- 📝 Resignation & onboarding procedures\n"
+            "- 📱 **iTalent** system — attendance, leave & business trips\n"
+            "- 🧾 Payslips — attach an image and I'll explain it!\n\n"
+            "How can I help you today?"
+        ),
+        "commission_q": (
+            "Got it! Before I calculate, do you have a **commission** this month? 💰\n\n"
+            "- If **yes** — tell me the amount and I'll add it to your salary before calculating.\n"
+            "- If **no** — just type \"no\" or \"0\" and I'll calculate on your base salary.\n\n"
+            "Recorded base salary: **{gross:,.0f} EGP**"
+        ),
+        "calc_with_comm":    "Base {base:,.2f} EGP + Commission {comm:,.2f} EGP = Total {total:,.2f} EGP",
+        "calc_no_comm":      "Base salary {base:,.2f} EGP (no commission)",
+        "system_lang_instr": "Always respond in English.",
+        "vision_system": (
+            "You are an HR assistant specializing in reading payslips. "
+            "Read the attached image carefully and answer the employee's question in English "
+            "clearly and accurately. If you see numbers or line items, explain them in detail."
+        ),
+        "vision_default_q": "Please explain the contents of this payslip.",
+    },
+}
+
 # ── Handbook text ────────────────────────────────────────────────────────────
 HANDBOOK = """
 51Talk Egypt — Employee Handbook (Bilingual Edition 2026)
@@ -378,20 +512,21 @@ def is_salary_calc_request(text: str) -> bool:
     return has_trigger and has_number
 
 
-SYSTEM_PROMPT = f"""أنت مساعد الموارد البشرية الذكي لشركة 51Talk Egypt، اسمك "توكي".
+def build_system_prompt(lang: str) -> str:
+    lang_instr = UI[lang]["system_lang_instr"]
+    return f"""You are Toki, the smart HR assistant for 51Talk Egypt.
+Your job is to help employees with company policy questions, HR procedures, and salary/tax calculations.
 
-مهمتك مساعدة موظفي الشركة في أسئلة سياسات الشركة، إجراءات HR، وحساب الرواتب والضرائب.
+Critical rules:
+1. {lang_instr} Use a clear, professional, and friendly tone.
+2. Base your answers only on the Employee Handbook and Salary Knowledge below.
+3. If the message contains [Net Salary Calculation Result], use those exact numbers and present them clearly.
+4. For personal data questions (individual leave balance, personal attendance), direct the employee to hr.egy@51talk.com.
+5. If the answer is not in the handbook, say so honestly and suggest contacting HR.
+6. Never invent information not in the handbook.
+7. Present answers in an organized format (bullet points, tables, numbered steps as needed).
 
-**قواعد مهمة جداً:**
-1. أجب دائماً باللغة العربية بأسلوب واضح ومهني وودود.
-2. استند في إجاباتك فقط إلى المعلومات الموجودة في دليل الموظف أدناه.
-3. إذا وجدت [نتيجة حساب الراتب الصافي] في الرسالة، استخدم هذه الأرقام مباشرةً وقدّمها بشكل منسق وواضح بالعربية.
-4. إذا كان السؤال يتعلق ببيانات شخصية (رصيد الإجازات، الحضور الفردي)، وجّه الموظف لـ hr.egy@51talk.com.
-5. إذا لم تجد إجابة في الدليل، قل ذلك بصراحة واقترح التواصل مع HR.
-6. لا تخترع معلومات غير موجودة في الدليل.
-7. قدم إجاباتك بشكل منظم (نقاط، جداول، أرقام حسب الحاجة).
-
-**دليل الموظف الرسمي:**
+Employee Handbook:
 {HANDBOOK}
 
 {SALARY_KNOWLEDGE}
@@ -791,6 +926,33 @@ html, body, [class*="css"], .stApp {
 </style>
 """, unsafe_allow_html=True)
 
+# ── Language state (must be before any UI rendering) ─────────────────────────
+if "lang" not in st.session_state:
+    st.session_state.lang = "ar"
+lang = st.session_state.lang
+T = UI[lang]
+
+# Direction override for English (base CSS is RTL)
+if lang == "en":
+    st.markdown("""
+    <style>
+    html, body, [class*="css"], .stApp {
+        direction: ltr !important;
+    }
+    [data-testid="stSidebar"] { direction: ltr !important; border-left: none !important; border-right: 1px solid var(--border-yellow) !important; }
+    [data-testid="stChatMessage"] { direction: ltr !important; text-align: left !important; }
+    [data-testid="stChatMessage"] p,
+    [data-testid="stChatMessage"] li,
+    [data-testid="stChatMessage"] span { direction: ltr !important; text-align: left !important; }
+    [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) { border-right: none !important; border-left: 3px solid var(--yellow) !important; }
+    [data-testid="stChatInput"] textarea { direction: ltr !important; text-align: left !important; }
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 { text-align: left !important; }
+    .chat-header, .sidebar-title, .hr-card, .upload-zone, .attached-badge { direction: ltr !important; text-align: left !important; }
+    .sidebar-brand { direction: ltr !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
 # ── Header ───────────────────────────────────────────────────────────────────
 _toki_src = f"data:image/png;base64,{TOKI_B64}" if TOKI_B64 else "https://placehold.co/90x90/FFC800/162040?text=HR"
 st.markdown(f"""
@@ -799,8 +961,8 @@ st.markdown(f"""
         <img src="{_toki_src}" alt="Toki">
     </div>
     <div><span class="brand-badge">51Talk Egypt</span></div>
-    <h1>مساعد HR</h1>
-    <p>مرحباً! أنا توكي، مساعدك في الموارد البشرية 🌟</p>
+    <h1>{T["header_title"]}</h1>
+    <p>{T["header_sub"]}</p>
     <div class="divider"></div>
 </div>
 """, unsafe_allow_html=True)
@@ -812,46 +974,37 @@ with st.sidebar:
         <img src="{_toki_src}" alt="Toki">
         <div>
             <div class="sb-text">51Talk Egypt</div>
-            <div class="sb-sub">Human Resources Assistant</div>
+            <div class="sb-sub">{T["brand_sub"]}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
-    st.markdown('<p class="sidebar-title">سياسات الشركة</p>', unsafe_allow_html=True)
-    suggestions = [
-        "كم يوم إجازة سنوية لديّ؟",
-        "ما هو نظام الحضور والانصراف؟",
-        "ما هي عقوبة التأخير؟",
-        "ما هي إجراءات الاستقالة؟",
-        "ما هو موعد صرف الراتب؟",
-        "ما هي سياسة الإجازة المرضية؟",
-        "ما هو كود اللبس الرسمي؟",
-        "كيف أتواصل مع HR؟",
-    ]
-    for s in suggestions:
+
+    # Language toggle
+    if st.button(T["switch_lang"], use_container_width=True, key="lang_toggle"):
+        st.session_state.lang = "en" if lang == "ar" else "ar"
+        st.session_state.messages = []
+        st.session_state.pending_salary_gross = None
+        st.rerun()
+
+    st.markdown(f'<p class="sidebar-title" style="margin-top:0.8rem">{T["section_policies"]}</p>', unsafe_allow_html=True)
+    for s in T["suggestions"]:
         if st.button(s, use_container_width=True, key=s):
             st.session_state["pending_input"] = s
 
-    st.markdown('<p class="sidebar-title" style="margin-top:1rem">iTalent</p>', unsafe_allow_html=True)
-    italent_suggestions = [
-        "كيف أسجل الحضور والانصراف في iTalent؟",
-        "كيف أطلب إجازة في iTalent؟",
-        "كيف أتابع طلبات الإجازة؟",
-        "كيف أفتح iTalent؟",
-        "كيف أطلب مأمورية في iTalent؟",
-    ]
-    for s in italent_suggestions:
+    st.markdown(f'<p class="sidebar-title" style="margin-top:1rem">{T["section_italent"]}</p>', unsafe_allow_html=True)
+    for s in T["italent_suggestions"]:
         if st.button(s, use_container_width=True, key=s):
             st.session_state["pending_input"] = s
 
-    st.markdown("""
+    st.markdown(f"""
     <div class="hr-card">
-        <div class="label">📧 تواصل مع فريق HR</div>
+        <div class="label">{T["hr_label"]}</div>
         <div class="email">hr.egy@51talk.com</div>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🗑️ مسح المحادثة", use_container_width=True):
+    if st.button(T["clear_chat"], use_container_width=True):
         st.session_state.messages = []
         st.session_state.pending_salary_gross = None
         st.rerun()
@@ -862,26 +1015,12 @@ if "messages" not in st.session_state:
 if "attached_image" not in st.session_state:
     st.session_state.attached_image = None
 if "pending_salary_gross" not in st.session_state:
-    st.session_state.pending_salary_gross = None  # gross stored while awaiting commission
+    st.session_state.pending_salary_gross = None
 
 # Welcome message on first load
 if not st.session_state.messages:
     with st.chat_message("assistant"):
-        st.markdown("""
-مرحباً! 👋 أنا **توكي**، مساعد HR الخاص بشركة **51Talk Egypt**.
-
-يمكنني مساعدتك في:
-- 📅 سياسات الإجازات (السنوية، المرضية، الأمومة...)
-- ⏰ جداول العمل والحضور والغيابات
-- 💰 الرواتب والمزايا والتعويضات
-- 🧮 **حساب صافي الراتب والضريبة** — فقط اكتب مثلاً: *"احسب صافي راتب 15000 جنيه"*
-- 📋 قواعد السلوك المهني ومعايير العمل
-- 📝 إجراءات الاستقالة والتوظيف
-- 📱 نظام **iTalent** — الحضور وطلبات الإجازة والمأموريات
-- 🧾 كشوف الرواتب — أرفق صورة وأنا أشرحها لك!
-
-كيف يمكنني مساعدتك اليوم؟
-        """)
+        st.markdown(T["welcome"])
 
 # Display chat history
 for msg in st.session_state.messages:
@@ -895,20 +1034,16 @@ for msg in st.session_state.messages:
 def _client() -> Groq:
     api_key = st.secrets.get("GROQ_API_KEY", "")
     if not api_key:
-        st.error("⚠️ مفتاح API غير موجود.")
+        st.error(T["api_error"])
         st.stop()
     return Groq(api_key=api_key)
 
 
 def get_text_response(messages: list[dict]) -> str:
-    """HR handbook Q&A — text only."""
-    history = [
-        {"role": m["role"], "content": m["content"]}
-        for m in messages
-    ]
+    history = [{"role": m["role"], "content": m["content"]} for m in messages]
     response = _client().chat.completions.create(
         model="llama-3.3-70b-versatile",
-        messages=[{"role": "system", "content": SYSTEM_PROMPT}] + history,
+        messages=[{"role": "system", "content": build_system_prompt(lang)}] + history,
         temperature=0.2,
         max_tokens=1500,
     )
@@ -916,22 +1051,16 @@ def get_text_response(messages: list[dict]) -> str:
 
 
 def get_vision_response(question: str, image_b64: str, mime: str) -> str:
-    """Payslip reading — vision model."""
-    system = (
-        "أنت مساعد HR متخصص في قراءة كشوف الرواتب. "
-        "اقرأ الصورة المرفقة بعناية وأجب على سؤال الموظف باللغة العربية "
-        "بشكل واضح ودقيق. إذا رأيت أرقاماً أو بنوداً، اشرحها بالتفصيل."
-    )
     response = _client().chat.completions.create(
         model="meta-llama/llama-4-scout-17b-16e-instruct",
         messages=[
-            {"role": "system", "content": system},
+            {"role": "system", "content": T["vision_system"]},
             {
                 "role": "user",
                 "content": [
                     {"type": "image_url",
                      "image_url": {"url": f"data:{mime};base64,{image_b64}"}},
-                    {"type": "text", "text": question or "اشرح لي محتوى كشف الراتب هذا."},
+                    {"type": "text", "text": question or T["vision_default_q"]},
                 ],
             },
         ],
@@ -945,13 +1074,6 @@ _NO_COMMISSION_WORDS = [
     "لا", "لأ", "لا يوجد", "لا توجد", "مفيش", "ما فيش", "بدون",
     "بدون عمولة", "no", "none", "zero", "0", "nothing",
 ]
-
-_COMMISSION_QUESTION = (
-    "حسناً! قبل ما أكمل الحساب، هل لديك **عمولة** هذا الشهر؟ 💰\n\n"
-    "- إذا **نعم** — أخبرني بمبلغها وسأضيفها للراتب قبل الحساب.\n"
-    "- إذا **لا** — اكتب «لا» أو «0» وسأحسب على الراتب الأساسي مباشرةً.\n\n"
-    "الراتب الأساسي المُسجَّل: **{gross:,.0f} ج.م**"
-)
 
 
 def _is_no_commission(text: str) -> bool:
@@ -975,12 +1097,9 @@ def handle_input(user_input: str) -> None:
             st.session_state.pending_salary_gross = None
 
             if comm_amount > 0:
-                calc_note = (
-                    f"الراتب الأساسي {pending_gross:,.2f} ج.م + العمولة {comm_amount:,.2f} ج.م"
-                    f" = الإجمالي {total:,.2f} ج.م"
-                )
+                calc_note = T["calc_with_comm"].format(base=pending_gross, comm=comm_amount, total=total)
             else:
-                calc_note = f"الراتب الأساسي {pending_gross:,.2f} ج.م (بدون عمولة)"
+                calc_note = T["calc_no_comm"].format(base=pending_gross)
 
             effective_input = (
                 user_input
@@ -1004,7 +1123,7 @@ def handle_input(user_input: str) -> None:
         if gross:
             st.session_state.pending_salary_gross = gross
             _record_and_show_user(user_input, image_data)
-            reply = _COMMISSION_QUESTION.format(gross=gross)
+            reply = T["commission_q"].format(gross=gross)
             with st.chat_message("assistant"):
                 st.markdown(reply)
             st.session_state.messages.append({"role": "assistant", "content": reply})
@@ -1015,7 +1134,7 @@ def handle_input(user_input: str) -> None:
     messages_for_api = st.session_state.messages[:]
 
     with st.chat_message("assistant"):
-        with st.spinner("جاري التفكير..."):
+        with st.spinner(T["spinner"]):
             if image_data:
                 reply = get_vision_response(user_input, image_b64, image_data[1])
             else:
@@ -1044,7 +1163,7 @@ def _call_and_show_assistant(effective_input: str, messages_for_api: list | None
             {"role": "user", "content": effective_input}
         ]
     with st.chat_message("assistant"):
-        with st.spinner("جاري التفكير..."):
+        with st.spinner(T["spinner"]):
             reply = get_text_response(messages_for_api)
         st.markdown(reply)
     st.session_state.messages.append({"role": "assistant", "content": reply})
@@ -1052,10 +1171,10 @@ def _call_and_show_assistant(effective_input: str, messages_for_api: list | None
 
 
 # ── Payslip upload zone ───────────────────────────────────────────────────────
-st.markdown("""
+st.markdown(f"""
 <div class="upload-zone">
-    <div class="uz-title">🧾 إرفاق كشف راتب</div>
-    <div class="uz-hint">ارفع صورة كشف راتبك واسأل عنه مباشرةً</div>
+    <div class="uz-title">{T["upload_title"]}</div>
+    <div class="uz-hint">{T["upload_hint"]}</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1070,15 +1189,15 @@ if uploaded:
     img_bytes = uploaded.read()
     mime = uploaded.type or "image/jpeg"
     st.session_state.attached_image = (img_bytes, mime)
-    st.image(img_bytes, caption="✅ الصورة مرفقة — اكتب سؤالك وأرسل", width=260)
+    st.image(img_bytes, caption=T["image_caption"], width=260)
 elif st.session_state.attached_image:
-    st.markdown('<span class="attached-badge">📎 صورة مرفقة</span>', unsafe_allow_html=True)
+    st.markdown(f'<span class="attached-badge">{T["attached_badge"]}</span>', unsafe_allow_html=True)
 
 # ── Input handling ────────────────────────────────────────────────────────────
 if "pending_input" in st.session_state:
     pending = st.session_state.pop("pending_input")
     handle_input(pending)
 
-placeholder = "اسأل عن كشف راتبك..." if st.session_state.attached_image else "اكتب سؤالك هنا..."
+placeholder = T["placeholder_img"] if st.session_state.attached_image else T["placeholder"]
 if prompt := st.chat_input(placeholder):
     handle_input(prompt)
