@@ -831,20 +831,6 @@ with st.sidebar:
         if st.button(s, use_container_width=True, key=s):
             st.session_state["pending_input"] = s
 
-    st.markdown('<p class="sidebar-title" style="margin-top:1rem">حساب الراتب والضرائب</p>', unsafe_allow_html=True)
-    salary_suggestions = [
-        "احسب صافي راتب 10000 جنيه",
-        "احسب صافي راتب 15000 جنيه",
-        "احسب صافي راتب 20000 جنيه",
-        "احسب صافي راتب 30000 جنيه",
-        "كيف تُحسب الضريبة على الراتب؟",
-        "ما هي شرائح ضريبة الدخل؟",
-        "ما هي نسبة خصم التأمينات؟",
-    ]
-    for s in salary_suggestions:
-        if st.button(s, use_container_width=True, key=s):
-            st.session_state["pending_input"] = s
-
     st.markdown('<p class="sidebar-title" style="margin-top:1rem">iTalent</p>', unsafe_allow_html=True)
     italent_suggestions = [
         "كيف أسجل الحضور والانصراف في iTalent؟",
@@ -867,13 +853,16 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🗑️ مسح المحادثة", use_container_width=True):
         st.session_state.messages = []
+        st.session_state.pending_salary_gross = None
         st.rerun()
 
 # ── Chat state ────────────────────────────────────────────────────────────────
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "attached_image" not in st.session_state:
-    st.session_state.attached_image = None  # stores (bytes, mime_type)
+    st.session_state.attached_image = None
+if "pending_salary_gross" not in st.session_state:
+    st.session_state.pending_salary_gross = None  # gross stored while awaiting commission
 
 # Welcome message on first load
 if not st.session_state.messages:
@@ -952,35 +941,79 @@ def get_vision_response(question: str, image_b64: str, mime: str) -> str:
     return response.choices[0].message.content
 
 
+_NO_COMMISSION_WORDS = [
+    "لا", "لأ", "لا يوجد", "لا توجد", "مفيش", "ما فيش", "بدون",
+    "بدون عمولة", "no", "none", "zero", "0", "nothing",
+]
+
+_COMMISSION_QUESTION = (
+    "حسناً! قبل ما أكمل الحساب، هل لديك **عمولة** هذا الشهر؟ 💰\n\n"
+    "- إذا **نعم** — أخبرني بمبلغها وسأضيفها للراتب قبل الحساب.\n"
+    "- إذا **لا** — اكتب «لا» أو «0» وسأحسب على الراتب الأساسي مباشرةً.\n\n"
+    "الراتب الأساسي المُسجَّل: **{gross:,.0f} ج.م**"
+)
+
+
+def _is_no_commission(text: str) -> bool:
+    t = text.strip().lower()
+    return any(t == w or t.startswith(w + " ") for w in _NO_COMMISSION_WORDS)
+
+
 def handle_input(user_input: str) -> None:
     image_data = st.session_state.attached_image
     image_b64 = base64.b64encode(image_data[0]).decode() if image_data else None
+    pending_gross = st.session_state.pending_salary_gross
 
-    # Inject live salary calculation if applicable
-    effective_input = user_input
+    # ── Step 2: user is replying to the commission question ──────────────────
+    if not image_data and pending_gross is not None:
+        commission = extract_salary_amount(user_input)
+        no_comm = _is_no_commission(user_input)
+
+        if commission is not None or no_comm:
+            comm_amount = commission or 0.0
+            total = pending_gross + comm_amount
+            st.session_state.pending_salary_gross = None
+
+            if comm_amount > 0:
+                calc_note = (
+                    f"الراتب الأساسي {pending_gross:,.2f} ج.م + العمولة {comm_amount:,.2f} ج.م"
+                    f" = الإجمالي {total:,.2f} ج.م"
+                )
+            else:
+                calc_note = f"الراتب الأساسي {pending_gross:,.2f} ج.م (بدون عمولة)"
+
+            effective_input = (
+                user_input
+                + f"\n\n[{calc_note}]\n\n"
+                + salary_calc_context(total)
+            )
+
+            _record_and_show_user(user_input, image_data)
+            _call_and_show_assistant(effective_input)
+            return
+
+        # Can't parse the reply — fall through to normal LLM response
+        _record_and_show_user(user_input, image_data)
+        messages_for_api = st.session_state.messages[:]
+        _call_and_show_assistant(user_input, messages_for_api)
+        return
+
+    # ── Step 1: user provides a gross salary — ask about commission ──────────
     if not image_data and is_salary_calc_request(user_input):
         gross = extract_salary_amount(user_input)
         if gross:
-            effective_input = user_input + "\n\n" + salary_calc_context(gross)
+            st.session_state.pending_salary_gross = gross
+            _record_and_show_user(user_input, image_data)
+            reply = _COMMISSION_QUESTION.format(gross=gross)
+            with st.chat_message("assistant"):
+                st.markdown(reply)
+            st.session_state.messages.append({"role": "assistant", "content": reply})
+            return
 
-    # Store user message (original text only, no injected calc data)
-    msg_record = {"role": "user", "content": user_input}
-    if image_b64:
-        msg_record["image_b64"] = image_b64
-    st.session_state.messages.append(msg_record)
+    # ── Default: normal LLM Q&A ───────────────────────────────────────────────
+    _record_and_show_user(user_input, image_data)
+    messages_for_api = st.session_state.messages[:]
 
-    # Display user turn
-    with st.chat_message("user"):
-        if image_data:
-            st.image(image_data[0], width=260)
-        st.markdown(user_input)
-
-    # Build message history with effective input for the last user turn
-    messages_for_api = st.session_state.messages[:-1] + [
-        {"role": "user", "content": effective_input}
-    ]
-
-    # Get AI reply
     with st.chat_message("assistant"):
         with st.spinner("جاري التفكير..."):
             if image_data:
@@ -989,6 +1022,31 @@ def handle_input(user_input: str) -> None:
                 reply = get_text_response(messages_for_api)
         st.markdown(reply)
 
+    st.session_state.messages.append({"role": "assistant", "content": reply})
+    st.session_state.attached_image = None
+
+
+def _record_and_show_user(user_input: str, image_data) -> None:
+    image_b64 = base64.b64encode(image_data[0]).decode() if image_data else None
+    msg_record = {"role": "user", "content": user_input}
+    if image_b64:
+        msg_record["image_b64"] = image_b64
+    st.session_state.messages.append(msg_record)
+    with st.chat_message("user"):
+        if image_data:
+            st.image(image_data[0], width=260)
+        st.markdown(user_input)
+
+
+def _call_and_show_assistant(effective_input: str, messages_for_api: list | None = None) -> None:
+    if messages_for_api is None:
+        messages_for_api = st.session_state.messages[:-1] + [
+            {"role": "user", "content": effective_input}
+        ]
+    with st.chat_message("assistant"):
+        with st.spinner("جاري التفكير..."):
+            reply = get_text_response(messages_for_api)
+        st.markdown(reply)
     st.session_state.messages.append({"role": "assistant", "content": reply})
     st.session_state.attached_image = None
 
