@@ -184,20 +184,217 @@ MY PROFILE:
   - View and verify your personal HR information under Employee Self-Service → My Profile.
 """
 
-SYSTEM_PROMPT = f"""أنت مساعد الموارد البشرية الذكي لشركة 51Talk Egypt، اسمك "مساعد HR".
+# ── Egyptian Salary Calculation Knowledge (2025) ──────────────────────────────
+SALARY_KNOWLEDGE = """
+12. SALARY CALCULATION & TAX DEDUCTIONS (Egypt 2025)
 
-مهمتك الوحيدة هي مساعدة موظفي الشركة في الإجابة على أسئلتهم المتعلقة بسياسات الشركة وإجراءات الموارد البشرية.
+HOW YOUR NET SALARY IS CALCULATED — STEP BY STEP:
+
+STEP 1 — Social & Health Insurance (Employee Share)
+  Rate:           12% total (11% Social Insurance + 1% Health Insurance)
+  Applied to:     Your "insurable wage" (basic salary + fixed allowances)
+  Monthly cap:    EGP 14,500 maximum insurable wage (2025 figure)
+  Monthly floor:  EGP 2,300 minimum insurable wage (2025 figure)
+  Max deduction:  EGP 14,500 × 12% = EGP 1,740/month
+  This deduction is tax-deductible (reduces your taxable income).
+
+STEP 2 — Martyrs Fund
+  Rate: 0.05% of gross monthly salary (very small deduction).
+
+STEP 3 — Annual Taxable Income
+  Formula: (Gross Monthly × 12) − (Monthly SI deduction × 12)
+
+STEP 4 — Personal Exemption
+  EGP 20,000 per year is deducted from annual taxable income (tax-free).
+
+STEP 5 — Apply Progressive Tax Brackets (Annual)
+  Bracket                          Rate    Max Tax in Bracket
+  EGP 0       – EGP 40,000         0%      EGP 0
+  EGP 40,001  – EGP 55,000        10%      EGP 1,500
+  EGP 55,001  – EGP 70,000        15%      EGP 2,250
+  EGP 70,001  – EGP 200,000       20%      EGP 26,000
+  EGP 200,001 – EGP 400,000       22.5%    EGP 45,000
+  EGP 400,001 – EGP 1,200,000     25%      EGP 200,000
+  Above EGP 1,200,000             27.5%    unlimited
+
+STEP 6 — Monthly Tax
+  Annual Tax ÷ 12 = Monthly Tax deducted from payslip.
+
+STEP 7 — Net Monthly Salary
+  Net = Gross − Monthly SI − Monthly Tax − Martyrs Fund
+
+QUICK EXAMPLES:
+  Gross EGP 5,000/month  → approx. net EGP 4,367/month
+  Gross EGP 10,000/month → approx. net EGP 8,513/month
+  Gross EGP 15,000/month → approx. net EGP 12,441/month
+  Gross EGP 20,000/month → approx. net EGP 16,300/month
+  Gross EGP 30,000/month → approx. net EGP 23,547/month
+  Gross EGP 50,000/month → approx. net EGP 37,262/month
+
+KEY NOTES:
+  - Tax is calculated on annual income then divided by 12 for monthly payslip.
+  - The SI cap means all employees earning above EGP 14,500/month pay the
+    same fixed SI deduction of EGP 1,740/month.
+  - The personal exemption (EGP 20,000/year ≈ EGP 1,667/month) benefits
+    lower-income employees most.
+  - Salary increases can move you into a higher tax bracket only on the
+    portion above the bracket threshold, not your entire income.
+  - Company's share of social insurance (18.75%) is paid separately by the
+    employer and does NOT appear as a deduction on your payslip.
+  - For personalized tax advice, contact HR at hr.egy@51talk.com.
+"""
+
+# ── Salary Calculator ─────────────────────────────────────────────────────────
+import re
+
+_TAX_BRACKETS = [
+    (40_000,       0.00),
+    (55_000,       0.10),
+    (70_000,       0.15),
+    (200_000,      0.20),
+    (400_000,      0.225),
+    (1_200_000,    0.25),
+    (float("inf"), 0.275),
+]
+_SI_RATE       = 0.12    # 11% pension + 1% health
+_SI_CAP        = 14_500
+_SI_FLOOR      = 2_300
+_MARTYRS_RATE  = 0.0005
+_ANNUAL_EXEMPT = 20_000
+
+
+def calculate_net_salary(gross: float) -> dict:
+    insurable = max(_SI_FLOOR, min(gross, _SI_CAP))
+    monthly_si = round(insurable * _SI_RATE, 2)
+    monthly_martyrs = round(gross * _MARTYRS_RATE, 2)
+
+    annual_gross = gross * 12
+    annual_si = monthly_si * 12
+    annual_before_exempt = annual_gross - annual_si
+    annual_taxable = max(0.0, annual_before_exempt - _ANNUAL_EXEMPT)
+
+    annual_tax = 0.0
+    prev = 0
+    breakdown = []
+    remaining = annual_taxable
+    for limit, rate in _TAX_BRACKETS:
+        if remaining <= 0:
+            break
+        band = (limit - prev) if limit != float("inf") else remaining
+        chunk = min(remaining, band)
+        tax = round(chunk * rate, 2)
+        if chunk > 0:
+            label = (f"{prev:,.0f} – {limit:,.0f}" if limit != float("inf")
+                     else f"فوق {prev:,.0f}")
+            breakdown.append({"شريحة (سنوي)": label,
+                               "نسبة": f"{rate*100:.1f}%",
+                               "دخل في الشريحة": f"{chunk:,.2f}",
+                               "ضريبة": f"{tax:,.2f}"})
+        annual_tax += tax
+        remaining -= chunk
+        prev = limit if limit != float("inf") else prev
+
+    monthly_tax = round(annual_tax / 12, 2)
+    net = round(gross - monthly_si - monthly_tax - monthly_martyrs, 2)
+    effective = round(annual_tax / annual_gross * 100, 2) if annual_gross else 0
+
+    return {
+        "gross": gross,
+        "insurable_wage": insurable,
+        "monthly_si": monthly_si,
+        "monthly_martyrs": monthly_martyrs,
+        "annual_gross": annual_gross,
+        "annual_si": annual_si,
+        "annual_taxable_before_exempt": round(annual_before_exempt, 2),
+        "personal_exemption": _ANNUAL_EXEMPT,
+        "annual_taxable": round(annual_taxable, 2),
+        "annual_tax": round(annual_tax, 2),
+        "monthly_tax": monthly_tax,
+        "net": net,
+        "effective_rate": effective,
+        "breakdown": breakdown,
+    }
+
+
+def salary_calc_context(gross: float) -> str:
+    r = calculate_net_salary(gross)
+    rows = "\n".join(
+        f"  {b['شريحة (سنوي)']:35s} | {b['نسبة']:6s} | دخل {b['دخل في الشريحة']:>12s} | ضريبة {b['ضريبة']:>12s}"
+        for b in r["breakdown"]
+    )
+    return f"""
+[نتيجة حساب الراتب الصافي — أرقام دقيقة محسوبة آلياً]
+
+الراتب الإجمالي (Gross):           {r['gross']:>12,.2f} ج.م / شهر
+الوعاء التأميني:                   {r['insurable_wage']:>12,.2f} ج.م / شهر
+خصم تأمينات اجتماعية وصحية (12%): {r['monthly_si']:>12,.2f} ج.م / شهر
+خصم صندوق الشهداء (0.05%):         {r['monthly_martyrs']:>12,.2f} ج.م / شهر
+
+الدخل السنوي الإجمالي:             {r['annual_gross']:>12,.2f} ج.م
+خصم التأمينات السنوية:             {r['annual_si']:>12,.2f} ج.م
+الإعفاء الشخصي السنوي:            {r['personal_exemption']:>12,.2f} ج.م
+صافي الدخل الخاضع للضريبة سنوياً: {r['annual_taxable']:>12,.2f} ج.م
+
+تفصيل الشرائح الضريبية:
+{rows}
+
+إجمالي الضريبة السنوية:            {r['annual_tax']:>12,.2f} ج.م
+الضريبة الشهرية:                   {r['monthly_tax']:>12,.2f} ج.م
+
+═══════════════════════════════════════════
+الراتب الصافي الشهري:              {r['net']:>12,.2f} ج.م
+المعدل الضريبي الفعلي:             {r['effective_rate']:>11.2f}%
+═══════════════════════════════════════════
+"""
+
+
+def extract_salary_amount(text: str) -> float | None:
+    text_clean = text.replace(",", "").replace("،", "")
+    patterns = [
+        r'(\d+(?:\.\d+)?)\s*(?:ج\.م|جنيه|egp|le)',
+        r'(?:راتب|gross|salary|مرتب|دخل)[\s:]*(\d+(?:\.\d+)?)',
+        r'(\d{4,}(?:\.\d+)?)',
+    ]
+    for pat in patterns:
+        m = re.search(pat, text_clean, re.IGNORECASE)
+        if m:
+            val = float(m.group(1))
+            if 500 <= val <= 5_000_000:
+                return val
+    return None
+
+
+CALC_TRIGGER_WORDS = [
+    "احسب", "حساب", "كم صافي", "صافي راتب", "صافي مرتب",
+    "كم يتبقى", "خصومات", "ضريبة", "تأمين", "نت", "net",
+    "calculate", "salary calc", "كم راتب", "راتبي", "مرتبي",
+]
+
+
+def is_salary_calc_request(text: str) -> bool:
+    lower = text.lower()
+    has_trigger = any(w in lower for w in CALC_TRIGGER_WORDS)
+    has_number = bool(re.search(r'\d{4,}', text.replace(",", "").replace("،", "")))
+    return has_trigger and has_number
+
+
+SYSTEM_PROMPT = f"""أنت مساعد الموارد البشرية الذكي لشركة 51Talk Egypt، اسمك "توكي".
+
+مهمتك مساعدة موظفي الشركة في أسئلة سياسات الشركة، إجراءات HR، وحساب الرواتب والضرائب.
 
 **قواعد مهمة جداً:**
 1. أجب دائماً باللغة العربية بأسلوب واضح ومهني وودود.
 2. استند في إجاباتك فقط إلى المعلومات الموجودة في دليل الموظف أدناه.
-3. إذا كان السؤال يتعلق ببيانات شخصية (رصيد الإجازات، الراتب، الحضور الفردي)، وضح بلطف أنك لا تملك صلاحية الوصول إلى البيانات الشخصية ووجّه الموظف للتواصل مع HR على hr.egy@51talk.com.
-4. إذا لم تجد إجابة في الدليل، قل ذلك بصراحة واقترح التواصل مع HR.
-5. لا تخترع معلومات غير موجودة في الدليل.
-6. قدم إجاباتك بشكل منظم وسهل القراءة (نقاط، جداول، أرقام حسب الحاجة).
+3. إذا وجدت [نتيجة حساب الراتب الصافي] في الرسالة، استخدم هذه الأرقام مباشرةً وقدّمها بشكل منسق وواضح بالعربية.
+4. إذا كان السؤال يتعلق ببيانات شخصية (رصيد الإجازات، الحضور الفردي)، وجّه الموظف لـ hr.egy@51talk.com.
+5. إذا لم تجد إجابة في الدليل، قل ذلك بصراحة واقترح التواصل مع HR.
+6. لا تخترع معلومات غير موجودة في الدليل.
+7. قدم إجاباتك بشكل منظم (نقاط، جداول، أرقام حسب الحاجة).
 
 **دليل الموظف الرسمي:**
 {HANDBOOK}
+
+{SALARY_KNOWLEDGE}
 """
 
 # ── Styling ──────────────────────────────────────────────────────────────────
@@ -634,6 +831,20 @@ with st.sidebar:
         if st.button(s, use_container_width=True, key=s):
             st.session_state["pending_input"] = s
 
+    st.markdown('<p class="sidebar-title" style="margin-top:1rem">حساب الراتب والضرائب</p>', unsafe_allow_html=True)
+    salary_suggestions = [
+        "احسب صافي راتب 10000 جنيه",
+        "احسب صافي راتب 15000 جنيه",
+        "احسب صافي راتب 20000 جنيه",
+        "احسب صافي راتب 30000 جنيه",
+        "كيف تُحسب الضريبة على الراتب؟",
+        "ما هي شرائح ضريبة الدخل؟",
+        "ما هي نسبة خصم التأمينات؟",
+    ]
+    for s in salary_suggestions:
+        if st.button(s, use_container_width=True, key=s):
+            st.session_state["pending_input"] = s
+
     st.markdown('<p class="sidebar-title" style="margin-top:1rem">iTalent</p>', unsafe_allow_html=True)
     italent_suggestions = [
         "كيف أسجل الحضور والانصراف في iTalent؟",
@@ -670,13 +881,14 @@ if not st.session_state.messages:
         st.markdown("""
 مرحباً! 👋 أنا **توكي**، مساعد HR الخاص بشركة **51Talk Egypt**.
 
-يمكنني مساعدتك في الإجابة على أسئلتك المتعلقة بـ:
+يمكنني مساعدتك في:
 - 📅 سياسات الإجازات (السنوية، المرضية، الأمومة...)
-- ⏰ جداول العمل والحضور
-- 💰 الرواتب والمزايا
-- 📋 قواعد السلوك المهني
-- 📝 إجراءات الاستقالة والتعيين
-- 📱 نظام **iTalent** — الحضور والانصراف وطلبات الإجازة والمأموريات
+- ⏰ جداول العمل والحضور والغيابات
+- 💰 الرواتب والمزايا والتعويضات
+- 🧮 **حساب صافي الراتب والضريبة** — فقط اكتب مثلاً: *"احسب صافي راتب 15000 جنيه"*
+- 📋 قواعد السلوك المهني ومعايير العمل
+- 📝 إجراءات الاستقالة والتوظيف
+- 📱 نظام **iTalent** — الحضور وطلبات الإجازة والمأموريات
 - 🧾 كشوف الرواتب — أرفق صورة وأنا أشرحها لك!
 
 كيف يمكنني مساعدتك اليوم؟
@@ -744,7 +956,14 @@ def handle_input(user_input: str) -> None:
     image_data = st.session_state.attached_image
     image_b64 = base64.b64encode(image_data[0]).decode() if image_data else None
 
-    # Store user message
+    # Inject live salary calculation if applicable
+    effective_input = user_input
+    if not image_data and is_salary_calc_request(user_input):
+        gross = extract_salary_amount(user_input)
+        if gross:
+            effective_input = user_input + "\n\n" + salary_calc_context(gross)
+
+    # Store user message (original text only, no injected calc data)
     msg_record = {"role": "user", "content": user_input}
     if image_b64:
         msg_record["image_b64"] = image_b64
@@ -756,17 +975,22 @@ def handle_input(user_input: str) -> None:
             st.image(image_data[0], width=260)
         st.markdown(user_input)
 
+    # Build message history with effective input for the last user turn
+    messages_for_api = st.session_state.messages[:-1] + [
+        {"role": "user", "content": effective_input}
+    ]
+
     # Get AI reply
     with st.chat_message("assistant"):
         with st.spinner("جاري التفكير..."):
             if image_data:
                 reply = get_vision_response(user_input, image_b64, image_data[1])
             else:
-                reply = get_text_response(st.session_state.messages)
+                reply = get_text_response(messages_for_api)
         st.markdown(reply)
 
     st.session_state.messages.append({"role": "assistant", "content": reply})
-    st.session_state.attached_image = None  # clear after sending
+    st.session_state.attached_image = None
 
 
 # ── Payslip upload zone ───────────────────────────────────────────────────────
