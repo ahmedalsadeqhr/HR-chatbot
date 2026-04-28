@@ -81,11 +81,19 @@ UI = {
         "calc_no_comm":      "الراتب الأساسي {base:,.2f} ج.م (بدون عمولة)",
         "system_lang_instr": "أجب دائماً باللغة العربية.",
         "vision_system": (
-            "أنت مساعد HR متخصص في قراءة كشوف الرواتب. "
+            "أنت مساعد HR متخصص في قراءة كشوف الرواتب لشركة 51Talk Egypt. "
             "اقرأ الصورة المرفقة بعناية وأجب على سؤال الموظف باللغة العربية "
-            "بشكل واضح ودقيق. إذا رأيت أرقاماً أو بنوداً، اشرحها بالتفصيل."
+            "بشكل واضح ودقيق. إذا رأيت أرقاماً أو بنوداً، اشرحها بالتفصيل. "
+            "إذا كان السؤال لا علاقة له بكشف الراتب أو شؤون الموارد البشرية، "
+            "رفض الإجابة بأدب وأخبر المستخدم أن اختصاصك محدود في الموارد البشرية فقط."
         ),
         "vision_default_q": "اشرح لي محتوى كشف الراتب هذا.",
+        "out_of_scope": (
+            "عذراً، أنا متخصص فقط في شؤون الموارد البشرية لشركة 51Talk Egypt. "
+            "لا أستطيع الإجابة على أسئلة خارج نطاق عملي.\n\n"
+            "يمكنني مساعدتك في: الإجازات، الرواتب، الحضور، سياسات الشركة، نظام iTalent، وكشوف الرواتب. "
+            "هل لديك سؤال في هذه المجالات؟ 😊"
+        ),
     },
     "en": {
         "dir":              "ltr",
@@ -146,11 +154,19 @@ UI = {
         "calc_no_comm":      "Base salary {base:,.2f} EGP (no commission)",
         "system_lang_instr": "Always respond in English.",
         "vision_system": (
-            "You are an HR assistant specializing in reading payslips. "
+            "You are an HR assistant for 51Talk Egypt specializing in reading payslips. "
             "Read the attached image carefully and answer the employee's question in English "
-            "clearly and accurately. If you see numbers or line items, explain them in detail."
+            "clearly and accurately. If you see numbers or line items, explain them in detail. "
+            "If the question is unrelated to the payslip or HR matters, politely decline and "
+            "remind the user that your scope is limited to HR topics only."
         ),
         "vision_default_q": "Please explain the contents of this payslip.",
+        "out_of_scope": (
+            "Sorry, I'm only able to help with HR-related topics for 51Talk Egypt. "
+            "That question is outside my scope.\n\n"
+            "I can assist with: leave policies, salaries, attendance, company policies, "
+            "the iTalent system, and payslip explanations. Do you have a question in those areas? 😊"
+        ),
     },
 }
 
@@ -514,8 +530,30 @@ def is_salary_calc_request(text: str) -> bool:
 
 def build_system_prompt(lang: str) -> str:
     lang_instr = UI[lang]["system_lang_instr"]
+    out_of_scope_reply = UI[lang]["out_of_scope"]
     return f"""You are Toki, the smart HR assistant for 51Talk Egypt.
-Your job is to help employees with company policy questions, HR procedures, and salary/tax calculations.
+Your ONLY job is to help employees with HR-related topics for 51Talk Egypt.
+
+══════════════════════════════════════════
+SCOPE ENFORCEMENT — READ THIS FIRST
+══════════════════════════════════════════
+You are STRICTLY limited to these topics:
+  • Company policies (leave, attendance, conduct, dress code, resignation)
+  • Salary, tax, and compensation questions
+  • iTalent system usage
+  • Payslip explanations (when an image is attached)
+  • HR contact and escalation procedures
+
+If the user's message is about ANYTHING outside this list — including but not limited to:
+  food, recipes, cooking, sports, news, science, history, coding, general knowledge,
+  entertainment, travel, relationships, health advice, or any non-HR topic —
+you MUST respond with EXACTLY this message and nothing else:
+
+"{out_of_scope_reply}"
+
+Do NOT attempt to answer, do NOT explain why, do NOT apologize at length.
+Just return that exact message.
+══════════════════════════════════════════
 
 Critical rules:
 1. {lang_instr} Use a clear, professional, and friendly tone.
