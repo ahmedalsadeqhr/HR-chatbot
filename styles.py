@@ -36,6 +36,12 @@ html, body, [class*="css"], .stApp {
     direction: rtl;
     color: var(--cream) !important;
 }
+[data-testid="stIconMaterial"] {
+    font-family: 'Material Symbols Rounded' !important;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+    letter-spacing: normal !important;
+}
 
 .stApp {
     background-color: var(--navy) !important;
@@ -48,8 +54,8 @@ html, body, [class*="css"], .stApp {
 }
 
 [data-testid="stAppViewContainer"] { background: transparent !important; }
-[data-testid="block-container"] { padding-top: 1rem !important; max-width: 800px; }
-[data-testid="stMain"] { background: transparent !important; }
+[data-testid="stMainBlockContainer"] { padding-top: 1rem !important; max-width: 800px; }
+[data-testid="stBottomBlockContainer"] { background: transparent !important; }
 
 .star-field { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 .stars-sm, .stars-md, .stars-lg {
@@ -100,7 +106,9 @@ html, body, [class*="css"], .stApp {
 }
 
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0D1932 0%, #0A1428 100%) !important;
+    background: linear-gradient(180deg, rgba(13,25,50,0.80) 0%, rgba(10,20,40,0.86) 100%) !important;
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
     border-left: 1px solid rgba(255,200,0,0.22) !important;
     box-shadow: inset -1px 0 0 rgba(255,200,0,0.06);
 }
@@ -116,7 +124,11 @@ html, body, [class*="css"], .stApp {
     font-weight: 600 !important;
     text-align: right !important;
     direction: rtl !important;
-    transition: all 0.18s ease !important;
+    transition: background-color 0.2s cubic-bezier(0.22,1,0.36,1),
+                border-color 0.2s cubic-bezier(0.22,1,0.36,1),
+                color 0.2s cubic-bezier(0.22,1,0.36,1),
+                transform 0.15s cubic-bezier(0.22,1,0.36,1),
+                box-shadow 0.2s cubic-bezier(0.22,1,0.36,1) !important;
     padding: 0.42rem 0.75rem !important;
     width: 100% !important;
 }
@@ -128,7 +140,12 @@ html, body, [class*="css"], .stApp {
     box-shadow: 4px 0 12px rgba(255,200,0,0.10) inset !important;
 }
 [data-testid="stSidebar"] .stButton > button:active {
-    transform: translateX(-1px) scale(0.98) !important;
+    transform: translateX(-1px) scale(0.97) !important;
+    transition-duration: 0.08s !important;
+}
+[data-testid="stSidebar"] .stButton > button:focus-visible {
+    outline: 2px solid var(--amber) !important;
+    outline-offset: 2px !important;
 }
 [data-testid="stSidebar"] .stButton:last-child > button {
     background: rgba(220,53,53,0.07) !important;
@@ -161,20 +178,20 @@ html, body, [class*="css"], .stApp {
     position: relative;
     overflow: hidden;
 }
-[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) {
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) {
     background: linear-gradient(135deg,
         rgba(255,248,220,0.055) 0%,
         rgba(255,200,0,0.028) 100%) !important;
     border-color: rgba(255,200,0,0.18) !important;
     border-right: 3px solid var(--amber) !important;
 }
-[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"])::before {
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"])::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; height: 1px;
     background: linear-gradient(90deg, transparent, rgba(255,200,0,0.35), transparent);
 }
-[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
     background: rgba(255,200,0,0.055) !important;
     border-color: rgba(255,200,0,0.22) !important;
     box-shadow: 0 4px 20px rgba(0,0,0,0.30), 0 0 0 1px rgba(255,200,0,0.08) !important;
@@ -182,13 +199,19 @@ html, body, [class*="css"], .stApp {
 
 [data-testid="stChatMessage"] p,
 [data-testid="stChatMessage"] li,
-[data-testid="stChatMessage"] span {
+[data-testid="stChatMessage"] span:not([data-testid="stIconMaterial"]) {
     direction: rtl !important;
     text-align: right !important;
     color: var(--cream) !important;
     font-family: 'Nunito', 'Tajawal', sans-serif !important;
     font-size: 0.96rem !important;
     line-height: 1.8 !important;
+}
+[data-testid="stChatMessage"] [data-testid="stIconMaterial"] {
+    font-family: 'Material Symbols Rounded' !important;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+    letter-spacing: normal !important;
 }
 [data-testid="stChatMessage"] strong { color: var(--amber-light) !important; }
 [data-testid="stChatMessage"] ul,
@@ -201,12 +224,17 @@ html, body, [class*="css"], .stApp {
     font-size: 0.88em !important;
 }
 
-[data-testid="chatAvatarIcon-assistant"],
-[data-testid="chatAvatarIcon-user"] {
+[data-testid="stChatMessageAvatarAssistant"],
+[data-testid="stChatMessageAvatarUser"] {
     background: var(--navy-mid) !important;
     border: 2px solid var(--amber) !important;
     border-radius: 12px !important;
     box-shadow: 0 0 12px rgba(255,200,0,0.25) !important;
+}
+[data-testid="stChatMessageAvatarAssistant"] [data-testid="stIconMaterial"],
+[data-testid="stChatMessageAvatarUser"] [data-testid="stIconMaterial"] {
+    color: var(--amber-light) !important;
+    font-size: 1.1rem !important;
 }
 
 [data-testid="stChatInput"] {
@@ -214,7 +242,8 @@ html, body, [class*="css"], .stApp {
     border: 1.5px solid rgba(255,200,0,0.25) !important;
     border-radius: 16px !important;
     backdrop-filter: blur(12px);
-    transition: border-color 0.22s, box-shadow 0.22s !important;
+    transition: border-color 0.22s cubic-bezier(0.22,1,0.36,1),
+                box-shadow 0.22s cubic-bezier(0.22,1,0.36,1) !important;
 }
 [data-testid="stChatInput"]:focus-within {
     border-color: var(--amber) !important;
@@ -234,15 +263,40 @@ html, body, [class*="css"], .stApp {
     color: var(--navy) !important;
     border-radius: 10px !important;
     font-weight: 800 !important;
-    transition: transform 0.12s, box-shadow 0.12s !important;
+    transition: transform 0.15s cubic-bezier(0.22,1,0.36,1),
+                box-shadow 0.15s cubic-bezier(0.22,1,0.36,1) !important;
 }
 [data-testid="stChatInput"] button:hover {
     transform: scale(1.06) !important;
     box-shadow: 0 4px 14px rgba(255,200,0,0.35) !important;
 }
-[data-testid="stChatInput"] button:active { transform: scale(0.96) !important; }
+[data-testid="stChatInput"] button:active {
+    transform: scale(0.96) !important;
+    transition-duration: 0.08s !important;
+}
+[data-testid="stChatInput"] button:focus-visible,
+[data-testid="stChatInput"] textarea:focus-visible {
+    outline: 2px solid var(--amber-light) !important;
+    outline-offset: 2px !important;
+}
 
 [data-testid="stSpinner"] p { color: var(--cream-muted) !important; direction: rtl; font-family: 'Nunito','Tajawal',sans-serif !important; }
+
+[data-testid="stAlertContainer"] {
+    background: rgba(220,53,53,0.10) !important;
+    border: 1px solid rgba(220,120,120,0.35) !important;
+    border-radius: 14px !important;
+    direction: rtl !important;
+    text-align: right !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.30) !important;
+}
+[data-testid="stAlertContainer"] p {
+    color: rgba(255,190,190,0.92) !important;
+    font-family: 'Nunito', 'Tajawal', sans-serif !important;
+    direction: rtl !important;
+    text-align: right !important;
+}
+[data-testid="stAlertContainer"] [data-testid="stIconMaterial"] { color: rgb(255,140,140) !important; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -338,7 +392,7 @@ html, body, [class*="css"], .stApp {
     background-clip: text;
     animation: shimmer-gold 4.5s linear infinite;
     margin: 0 0 0.3rem;
-    letter-spacing: 0.01em;
+    letter-spacing: -0.015em;
 }
 .chat-header p {
     color: var(--cream-muted);
@@ -451,6 +505,12 @@ html, body, [class*="css"], .stApp {
     border-radius: 9px !important;
     font-family: 'Nunito','Tajawal',sans-serif !important;
     box-shadow: 0 3px 10px rgba(255,200,0,0.30) !important;
+    transition: transform 0.15s cubic-bezier(0.22,1,0.36,1) !important;
+}
+[data-testid="stFileUploaderDropzone"] button:active { transform: scale(0.96) !important; }
+[data-testid="stFileUploaderDropzone"] button:focus-visible {
+    outline: 2px solid var(--amber-light) !important;
+    outline-offset: 2px !important;
 }
 
 [data-testid="stChatMessage"] img {
@@ -459,6 +519,33 @@ html, body, [class*="css"], .stApp {
     border: 1px solid rgba(255,200,0,0.28);
     margin-bottom: 0.5rem;
     box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .star-field, .stars-sm, .stars-md, .stars-lg,
+    .chat-header .toki-wrap, .chat-header .toki-wrap::after,
+    .chat-header h1, .chat-header .brand-badge { animation: none !important; }
+    [data-testid="stChatMessage"] { animation: msgFade 0.18s ease both !important; }
+    [data-testid="stSidebar"] .stButton > button:hover,
+    [data-testid="stChatInput"] button:hover { transform: none !important; }
+    * { scroll-behavior: auto !important; }
+}
+@keyframes msgFade { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-transparency: reduce) {
+    [data-testid="stSidebar"] {
+        background: #0A1428 !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+    [data-testid="stChatInput"] { background: #0F1C3A !important; backdrop-filter: none !important; }
+    [data-testid="stChatMessage"] { background: rgba(21,32,64,0.95) !important; }
+}
+
+@media (prefers-contrast: more) {
+    [data-testid="stChatMessage"] { border-width: 1.5px !important; }
+    [data-testid="stSidebar"] .stButton > button { border-color: rgba(255,255,255,0.35) !important; }
+    [data-testid="stChatInput"] { border-width: 2px !important; }
 }
 </style>
 """
@@ -470,11 +557,14 @@ html, body, [class*="css"], .stApp { direction: ltr !important; }
 [data-testid="stChatMessage"] { direction: ltr !important; text-align: left !important; }
 [data-testid="stChatMessage"] p,
 [data-testid="stChatMessage"] li,
-[data-testid="stChatMessage"] span { direction: ltr !important; text-align: left !important; }
-[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) { border-right: none !important; border-left: 3px solid var(--yellow) !important; }
+[data-testid="stChatMessage"] span:not([data-testid="stIconMaterial"]) { direction: ltr !important; text-align: left !important; }
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) { border-right: none !important; border-left: 3px solid var(--yellow) !important; }
 [data-testid="stChatInput"] textarea { direction: ltr !important; text-align: left !important; }
 [data-testid="stSidebar"] p, [data-testid="stSidebar"] h1,
-[data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 { text-align: left !important; }
+[data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 { direction: ltr !important; text-align: left !important; }
+[data-testid="stSidebar"] .stButton > button { direction: ltr !important; text-align: left !important; }
+[data-testid="stSidebar"] .stButton > button:hover { transform: translateX(3px) !important; }
+[data-testid="stSidebar"] .stButton > button:active { transform: translateX(1px) scale(0.97) !important; }
 .chat-header, .sidebar-title, .hr-card, .upload-zone, .attached-badge { direction: ltr !important; text-align: left !important; }
 .sidebar-brand { direction: ltr !important; }
 </style>
