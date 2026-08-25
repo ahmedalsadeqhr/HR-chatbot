@@ -75,5 +75,5 @@ pytest tests/ -v
 
 | Feature | Model |
 |---------|-------|
-| Text Q&A | `llama-3.3-70b-versatile` |
-| Payslip vision | `meta-llama/llama-4-scout-17b-16e-instruct` |
+| Text Q&A | `openai/gpt-oss-120b` |
+| Payslip vision | `qwen/qwen3.6-27b` |

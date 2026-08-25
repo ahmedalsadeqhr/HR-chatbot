@@ -40,7 +40,7 @@ def get_text_response(messages: list[dict], system_prompt: str) -> str:
     history = [{"role": m["role"], "content": m["content"]} for m in messages]
     try:
         response = _get_client().chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=[{"role": "system", "content": system_prompt}] + history,
             temperature=0.2,
             max_tokens=1500,
@@ -61,7 +61,7 @@ def get_vision_response(
 ) -> str:
     try:
         response = _get_client().chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="qwen/qwen3.6-27b",
             messages=[
                 {"role": "system", "content": vision_system},
                 {
