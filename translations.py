@@ -18,9 +18,11 @@ UI: dict[str, dict] = {
         "placeholder":      "اكتب سؤالك هنا...",
         "placeholder_img":  "اسأل عن كشف راتبك...",
         "api_error":        "⚠️ مفتاح API غير موجود.",
+        "api_invalid_key":  "⚠️ مفتاح API غير صالح. تواصل مع فريق الدعم التقني.",
         "api_rate_limit":   "⚠️ تم تجاوز حد الطلبات. انتظر لحظة وحاول مجدداً.",
         "api_connection":   "⚠️ خطأ في الاتصال. تحقق من اتصالك بالإنترنت.",
         "api_generic":      "⚠️ حدث خطأ غير متوقع. حاول مجدداً.",
+        "calc_out_of_range": "⚠️ إجمالي الراتب والعمولة كبير جداً أو صغير جداً لحسابه. تواصل مع hr.egy@51talk.com لمساعدتك.",
         "suggestions": [
             "كم يوم إجازة سنوية لديّ؟",
             "ما هو نظام الحضور والانصراف؟",
@@ -94,9 +96,11 @@ UI: dict[str, dict] = {
         "placeholder":      "Type your question here...",
         "placeholder_img":  "Ask about your payslip...",
         "api_error":        "⚠️ API key not found.",
+        "api_invalid_key":  "⚠️ Invalid API key. Please contact technical support.",
         "api_rate_limit":   "⚠️ Rate limit exceeded. Please wait a moment and try again.",
         "api_connection":   "⚠️ Connection error. Please check your internet connection.",
         "api_generic":      "⚠️ An unexpected error occurred. Please try again.",
+        "calc_out_of_range": "⚠️ The total salary and commission is too high or too low to calculate. Please contact hr.egy@51talk.com for help.",
         "suggestions": [
             "How many annual leave days do I have?",
             "What is the attendance system?",

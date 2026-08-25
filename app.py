@@ -79,6 +79,8 @@ with st.sidebar:
         st.session_state.lang = "en" if lang == "ar" else "ar"
         st.session_state.messages = []
         st.session_state.pending_salary_gross = None
+        st.session_state.consumed_upload_id = st.session_state.get("attached_upload_id")
+        st.session_state.attached_image = None
         st.rerun()
 
     st.markdown(f'<p class="sidebar-title" style="margin-top:0.8rem">{T["section_policies"]}</p>', unsafe_allow_html=True)
@@ -102,6 +104,8 @@ with st.sidebar:
     if st.button(T["clear_chat"], use_container_width=True):
         st.session_state.messages = []
         st.session_state.pending_salary_gross = None
+        st.session_state.consumed_upload_id = st.session_state.get("attached_upload_id")
+        st.session_state.attached_image = None
         st.rerun()
 
 # ── Chat state ────────────────────────────────────────────────────────────────
@@ -109,6 +113,10 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "attached_image" not in st.session_state:
     st.session_state.attached_image = None
+if "attached_upload_id" not in st.session_state:
+    st.session_state.attached_upload_id = None
+if "consumed_upload_id" not in st.session_state:
+    st.session_state.consumed_upload_id = None
 if "pending_salary_gross" not in st.session_state:
     st.session_state.pending_salary_gross = None
 
@@ -127,6 +135,7 @@ for msg in st.session_state.messages:
 def _error_message(code: str) -> str:
     mapping = {
         "missing_key":  T["api_error"],
+        "invalid_key":  T["api_invalid_key"],
         "rate_limit":   T["api_rate_limit"],
         "connection":   T["api_connection"],
     }
@@ -162,11 +171,16 @@ def _record_and_show_user(user_input: str, image_data: tuple | None) -> None:
         st.markdown(user_input)
 
 
+def _clear_attached_image() -> None:
+    st.session_state.consumed_upload_id = st.session_state.attached_upload_id
+    st.session_state.attached_image = None
+
+
 def _show_assistant(reply: str) -> None:
     with st.chat_message("assistant"):
         st.markdown(reply)
     st.session_state.messages.append({"role": "assistant", "content": reply})
-    st.session_state.attached_image = None
+    _clear_attached_image()
 
 
 def _call_and_show_assistant(effective_input: str, messages_for_api: list[dict] | None = None) -> None:
@@ -181,7 +195,7 @@ def _call_and_show_assistant(effective_input: str, messages_for_api: list[dict] 
             st.markdown(reply)
     if reply:
         st.session_state.messages.append({"role": "assistant", "content": reply})
-    st.session_state.attached_image = None
+    _clear_attached_image()
 
 
 def handle_input(user_input: str) -> None:
@@ -204,11 +218,19 @@ def handle_input(user_input: str) -> None:
             else:
                 calc_note = T["calc_no_comm"].format(base=pending_gross)
 
-            effective_input = (
-                user_input
-                + f"\n\n[{calc_note}]\n\n"
-                + salary_calc_context(total)
-            )
+            try:
+                effective_input = (
+                    user_input
+                    + f"\n\n[{calc_note}]\n\n"
+                    + salary_calc_context(total)
+                )
+            except ValueError:
+                _record_and_show_user(user_input, image_data)
+                with st.chat_message("assistant"):
+                    st.markdown(T["calc_out_of_range"])
+                st.session_state.messages.append({"role": "assistant", "content": T["calc_out_of_range"]})
+                return
+
             _record_and_show_user(user_input, image_data)
             _call_and_show_assistant(effective_input)
             return
@@ -244,7 +266,7 @@ def handle_input(user_input: str) -> None:
 
     if reply:
         st.session_state.messages.append({"role": "assistant", "content": reply})
-    st.session_state.attached_image = None
+    _clear_attached_image()
 
 
 # ── Payslip upload zone ───────────────────────────────────────────────────────
@@ -262,10 +284,16 @@ uploaded = st.file_uploader(
     key="payslip_upload",
 )
 
+if uploaded and uploaded.file_id == st.session_state.consumed_upload_id:
+    # Streamlit keeps returning the same file across reruns until the user
+    # removes it from the widget; skip re-attaching one we've already sent.
+    uploaded = None
+
 if uploaded:
     img_bytes = uploaded.read()
     mime = uploaded.type or "image/jpeg"
     st.session_state.attached_image = (img_bytes, mime)
+    st.session_state.attached_upload_id = uploaded.file_id
     st.image(img_bytes, caption=T["image_caption"], width=260)
 elif st.session_state.attached_image:
     st.markdown(f'<span class="attached-badge">{T["attached_badge"]}</span>', unsafe_allow_html=True)

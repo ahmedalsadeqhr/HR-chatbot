@@ -7,6 +7,13 @@ import groq as _groq
 
 logger = logging.getLogger(__name__)
 
+# Ordered by preference; if the first model has been deprecated/removed on
+# Groq's side (404), the next one is tried automatically instead of failing.
+TEXT_MODELS = ["openai/gpt-oss-120b", "qwen/qwen3.6-27b"]
+VISION_MODELS = ["qwen/qwen3.6-27b"]
+
+MAX_HISTORY_MESSAGES = 20
+
 
 class GroqAPIError(Exception):
     pass
@@ -28,7 +35,7 @@ def _handle_groq_error(exc: Exception) -> GroqAPIError:
         return GroqAPIError("connection")
     if isinstance(exc, _groq.AuthenticationError):
         logger.error("Groq auth error: %s", exc)
-        return GroqAPIError("missing_key")
+        return GroqAPIError("invalid_key")
     if isinstance(exc, _groq.APIStatusError):
         logger.error("Groq API status %s: %s", exc.status_code, exc.message)
         return GroqAPIError("api_error")
@@ -36,16 +43,32 @@ def _handle_groq_error(exc: Exception) -> GroqAPIError:
     return GroqAPIError("generic")
 
 
+def _create_with_fallback(models: list[str], **kwargs) -> str:
+    client = _get_client()
+    last_exc: Exception | None = None
+    for model in models:
+        try:
+            response = client.chat.completions.create(model=model, **kwargs)
+            return response.choices[0].message.content
+        except _groq.NotFoundError as exc:
+            logger.warning("Groq model '%s' unavailable (%s); trying next fallback", model, exc)
+            last_exc = exc
+            continue
+        except Exception as exc:
+            raise _handle_groq_error(exc) from exc
+    raise _handle_groq_error(last_exc if last_exc is not None else GroqAPIError("generic"))
+
+
 def get_text_response(messages: list[dict], system_prompt: str) -> str:
     history = [{"role": m["role"], "content": m["content"]} for m in messages]
+    history = history[-MAX_HISTORY_MESSAGES:]
     try:
-        response = _get_client().chat.completions.create(
-            model="openai/gpt-oss-120b",
+        return _create_with_fallback(
+            TEXT_MODELS,
             messages=[{"role": "system", "content": system_prompt}] + history,
             temperature=0.2,
             max_tokens=1500,
         )
-        return response.choices[0].message.content
     except GroqAPIError:
         raise
     except Exception as exc:
@@ -60,8 +83,8 @@ def get_vision_response(
     vision_default_q: str,
 ) -> str:
     try:
-        response = _get_client().chat.completions.create(
-            model="qwen/qwen3.6-27b",
+        return _create_with_fallback(
+            VISION_MODELS,
             messages=[
                 {"role": "system", "content": vision_system},
                 {
@@ -76,7 +99,6 @@ def get_vision_response(
             temperature=0.2,
             max_tokens=1500,
         )
-        return response.choices[0].message.content
     except GroqAPIError:
         raise
     except Exception as exc:
